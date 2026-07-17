@@ -192,15 +192,14 @@ export const STRATEGY_PRESETS: StrategyPreset[] = [
       ]),
   },
   {
-    key: 'iron-condor',
-    name: 'Iron condor',
-    hint: 'Range-bound · sell put & call spreads',
+    key: 'call-butterfly',
+    name: 'Call butterfly',
+    hint: 'Pin the strike · 1-2-1 call wings',
     build: (s, spot) =>
       build(s, spot, [
-        { offset: -4, kind: 'put', side: 1 },
-        { offset: -2, kind: 'put', side: -1 },
-        { offset: 2, kind: 'call', side: -1 },
-        { offset: 4, kind: 'call', side: 1 },
+        { offset: -2, kind: 'call', side: 1 },
+        { offset: 0, kind: 'call', side: -1, qty: 2 },
+        { offset: 2, kind: 'call', side: 1 },
       ]),
   },
   {
@@ -216,14 +215,15 @@ export const STRATEGY_PRESETS: StrategyPreset[] = [
       ]),
   },
   {
-    key: 'call-butterfly',
-    name: 'Call butterfly',
-    hint: 'Pin the strike · 1-2-1 call wings',
+    key: 'iron-condor',
+    name: 'Iron condor',
+    hint: 'Range-bound · sell put & call spreads',
     build: (s, spot) =>
       build(s, spot, [
-        { offset: -2, kind: 'call', side: 1 },
-        { offset: 0, kind: 'call', side: -1, qty: 2 },
-        { offset: 2, kind: 'call', side: 1 },
+        { offset: -4, kind: 'put', side: 1 },
+        { offset: -2, kind: 'put', side: -1 },
+        { offset: 2, kind: 'call', side: -1 },
+        { offset: 4, kind: 'call', side: 1 },
       ]),
   },
 ]
