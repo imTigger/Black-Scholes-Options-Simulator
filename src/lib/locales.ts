@@ -116,7 +116,7 @@ const en: Dict = {
 
 const zhCN: Dict = {
   ui: {
-    tagline: 'Black-Scholes 模拟器',
+    tagline: 'Black-Scholes 期权模拟器',
     'search.placeholder': '搜索代码 — AAPL、SPY…',
     'rate.label': '无风险利率',
     'margin.label': '裸卖保证金',
@@ -251,7 +251,7 @@ const zhCN: Dict = {
 
 const zhTW: Dict = {
   ui: {
-    tagline: 'Black-Scholes 模擬器',
+    tagline: 'Black-Scholes 期權模擬器',
     'search.placeholder': '搜尋代號 — AAPL、SPY…',
     'rate.label': '無風險利率',
     'margin.label': '裸賣保證金',
