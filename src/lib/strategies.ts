@@ -100,6 +100,18 @@ export const STRATEGY_PRESETS: StrategyPreset[] = [
     build: (s, spot) => build(s, spot, [{ offset: 0, kind: 'put', side: 1 }]),
   },
   {
+    key: 'short-call',
+    name: 'Short call',
+    hint: 'Bearish income · sell OTM call, naked',
+    build: (s, spot) => build(s, spot, [{ offset: 2, kind: 'call', side: -1 }]),
+  },
+  {
+    key: 'short-put',
+    name: 'Short put',
+    hint: 'Bullish income · sell OTM put',
+    build: (s, spot) => build(s, spot, [{ offset: -2, kind: 'put', side: -1 }]),
+  },
+  {
     key: 'bull-call-spread',
     name: 'Bull call spread',
     hint: 'Debit · buy ATM call, sell higher call',
@@ -157,6 +169,26 @@ export const STRATEGY_PRESETS: StrategyPreset[] = [
       build(s, spot, [
         { offset: 2, kind: 'call', side: 1 },
         { offset: -2, kind: 'put', side: 1 },
+      ]),
+  },
+  {
+    key: 'short-straddle',
+    name: 'Short straddle',
+    hint: 'Pin the strike · sell ATM call + put',
+    build: (s, spot) =>
+      build(s, spot, [
+        { offset: 0, kind: 'call', side: -1 },
+        { offset: 0, kind: 'put', side: -1 },
+      ]),
+  },
+  {
+    key: 'short-strangle',
+    name: 'Short strangle',
+    hint: 'Range income · sell OTM call + put',
+    build: (s, spot) =>
+      build(s, spot, [
+        { offset: 2, kind: 'call', side: -1 },
+        { offset: -2, kind: 'put', side: -1 },
       ]),
   },
   {

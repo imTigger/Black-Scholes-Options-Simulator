@@ -212,9 +212,20 @@ export default function LegsPanel({ legs, slices, spot, rate, now, forecast, onC
           {showForm ? 'Close custom leg' : '+ Custom leg'}
         </button>
         {legs.length > 0 && (
-          <button className="btn" onClick={() => onChange([])}>
-            Clear all
-          </button>
+          <>
+            <button
+              className="btn"
+              title="Invert every leg — long becomes short and vice versa"
+              onClick={() =>
+                onChange(legs.map((l) => ({ ...l, side: -l.side as 1 | -1 })))
+              }
+            >
+              ⇄ Flip L/S
+            </button>
+            <button className="btn" onClick={() => onChange([])}>
+              Clear all
+            </button>
+          </>
         )}
       </div>
 
