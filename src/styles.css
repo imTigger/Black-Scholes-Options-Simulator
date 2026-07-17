@@ -982,11 +982,11 @@ input[type='range'].slider::-moz-range-thumb {
 
 .stat-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 10px;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 720px) {
   .stat-grid {
     grid-template-columns: repeat(2, 1fr);
   }

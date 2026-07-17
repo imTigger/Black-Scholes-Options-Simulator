@@ -3,6 +3,7 @@ import { fmtMoney, fmtNum, fmtSignedMoney } from '../lib/format'
 import {
   findBreakevens,
   legExpiryClose,
+  marginEstimate,
   positionCost,
   positionGreeks,
   positionValue,
@@ -44,11 +45,13 @@ export default function StatBar({ legs, spot, rate, forecast }: Props) {
     const downUnboundedLo = slopeLo > 0.5 // falls toward S→0
 
     const greeks = positionGreeks(legs, forecast.price, forecast.date, forecast.ivShift, rate)
+    const maxLoss = downUnboundedHi || downUnboundedLo ? -Infinity : maxL
     return {
       cost,
       breakevens: findBreakevens(plExpiry, domain),
       maxProfit: upUnbounded || upUnboundedLo ? Infinity : maxP,
-      maxLoss: downUnboundedHi || downUnboundedLo ? -Infinity : maxL,
+      maxLoss,
+      margin: marginEstimate(legs, spot, maxLoss),
       greeks,
     }
   }, [legs, spot, rate, forecast])
@@ -82,6 +85,13 @@ export default function StatBar({ legs, spot, rate, forecast }: Props) {
               : '—'}
           </div>
         </div>
+        <div
+          className="stat"
+          title="Reg-T style estimate: max loss for defined-risk positions, the 20% naked formula for uncovered shorts. Brokers differ."
+        >
+          <div className="sl">Margin req. (est.)</div>
+          <div className="sv">{fmtMoney(stats.margin)}</div>
+        </div>
       </div>
       <div className="stat-grid">
         <div className="stat">
@@ -104,6 +114,12 @@ export default function StatBar({ legs, spot, rate, forecast }: Props) {
           <div className="sl">Vega</div>
           <div className="sv">
             {fmtSignedMoney(stats.greeks.vega)} <small>/vol pt</small>
+          </div>
+        </div>
+        <div className="stat">
+          <div className="sl">Rho</div>
+          <div className="sv">
+            {fmtSignedMoney(stats.greeks.rho)} <small>/1%</small>
           </div>
         </div>
       </div>

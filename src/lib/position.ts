@@ -56,6 +56,7 @@ export interface PositionGreeks {
   gamma: number
   theta: number // $ per calendar day
   vega: number // $ per vol point
+  rho: number // $ per 1% rate move
 }
 
 export function positionGreeks(
@@ -65,7 +66,7 @@ export function positionGreeks(
   ivShift: number,
   r: number,
 ): PositionGreeks {
-  const out: PositionGreeks = { delta: 0, gamma: 0, theta: 0, vega: 0 }
+  const out: PositionGreeks = { delta: 0, gamma: 0, theta: 0, vega: 0, rho: 0 }
   for (const leg of legs) {
     const T = yearsBetween(at, legExpiryClose(leg))
     const g = bsGreeks(leg.kind, S, leg.strike, T, shiftedIv(leg.iv, ivShift), r)
@@ -74,8 +75,45 @@ export function positionGreeks(
     out.gamma += scale * g.gamma
     out.theta += scale * g.theta
     out.vega += scale * g.vega
+    out.rho += scale * g.rho
   }
   return out
+}
+
+/**
+ * Reg-T-style initial margin estimate. Defined-risk positions require their
+ * max loss; uncovered short tails use the standard naked formula —
+ * premium + max(20% of underlying − OTM amount, 10% floor) — with coverage
+ * assigned long-vs-short per side and the opposite naked side's premium
+ * added (short-straddle rule). Brokers differ; this is an estimate.
+ */
+export function marginEstimate(legs: Leg[], spot: number, maxLoss: number): number {
+  const side = (kind: 'call' | 'put') => {
+    const shorts = legs
+      .filter((l) => l.kind === kind && l.side === -1)
+      .sort((a, b) => (kind === 'call' ? b.strike - a.strike : a.strike - b.strike))
+    const longQty = legs
+      .filter((l) => l.kind === kind && l.side === 1)
+      .reduce((s, l) => s + l.qty, 0)
+    let uncovered = Math.max(0, shorts.reduce((s, l) => s + l.qty, 0) - longQty)
+    let req = 0
+    let premium = 0
+    for (const l of shorts) {
+      if (uncovered <= 0) break
+      const n = Math.min(uncovered, l.qty)
+      uncovered -= n
+      const otm = kind === 'call' ? Math.max(0, l.strike - spot) : Math.max(0, spot - l.strike)
+      const floor = kind === 'call' ? 0.1 * spot : 0.1 * l.strike
+      req += n * CONTRACT_MULTIPLIER * (l.entryPrice + Math.max(0.2 * spot - otm, floor))
+      premium += n * CONTRACT_MULTIPLIER * l.entryPrice
+    }
+    return { req, premium }
+  }
+
+  const c = side('call')
+  const p = side('put')
+  if (c.req === 0 && p.req === 0) return Number.isFinite(maxLoss) ? Math.abs(Math.min(0, maxLoss)) : 0
+  return Math.max(c.req + p.premium, p.req + c.premium)
 }
 
 /** Price range that comfortably contains all strikes and the spot. */
