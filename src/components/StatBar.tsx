@@ -38,21 +38,21 @@ export default function StatBar({ legs, spot, rate, marginPct, forecast }: Props
       if (y > maxP) maxP = y
       if (y < maxL) maxL = y
     }
-    // Unbounded tails: nonzero slope at the domain edges
+    // Upside tail: nonzero slope past the highest strike means truly unbounded.
+    // Downside is never unbounded — the underlying stops at zero, so evaluate
+    // P/L exactly at S=0 (puts worth their strike, calls worthless).
     const eps = (hi - lo) / 400
     const slopeHi = (plExpiry(hi) - plExpiry(hi - eps)) / eps
-    const slopeLo = (plExpiry(lo + eps) - plExpiry(lo)) / eps
     const upUnbounded = slopeHi > 0.5
-    const downUnboundedHi = slopeHi < -0.5
-    const upUnboundedLo = slopeLo < -0.5 // rises toward S→0
-    const downUnboundedLo = slopeLo > 0.5 // falls toward S→0
+    const downUnbounded = slopeHi < -0.5
+    const plZero = plExpiry(0)
 
     const greeks = positionGreeks(legs, forecast.price, forecast.date, forecast.ivShift, rate)
-    const maxLoss = downUnboundedHi || downUnboundedLo ? -Infinity : maxL
+    const maxLoss = downUnbounded ? -Infinity : Math.min(maxL, plZero)
     return {
       cost,
       breakevens: findBreakevens(plExpiry, domain),
-      maxProfit: upUnbounded || upUnboundedLo ? Infinity : maxP,
+      maxProfit: upUnbounded ? Infinity : Math.max(maxP, plZero),
       maxLoss,
       margin: marginEstimate(legs, spot, maxLoss, marginPct),
       greeks,
