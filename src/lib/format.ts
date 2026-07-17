@@ -46,6 +46,22 @@ export function fmtDateShort(ms: number): string {
   return `${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')}`
 }
 
+export function fmtDateTimeShort(ms: number): string {
+  const d = new Date(ms)
+  return `${fmtDateShort(ms)} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+}
+
+/** Compact elapsed span: "+3h 25m", "+2d 4h". */
+export function fmtElapsed(ms: number): string {
+  const mins = Math.max(0, Math.round(ms / 60000))
+  const d = Math.floor(mins / 1440)
+  const h = Math.floor((mins % 1440) / 60)
+  const m = mins % 60
+  if (d > 0) return `+${d}d ${h}h`
+  if (h > 0) return `+${h}h ${m}m`
+  return `+${m}m`
+}
+
 /* Expiry stamps are midnight UTC — format them in UTC so the calendar date
    never drifts in the viewer's timezone. */
 export function fmtDateShortUTC(ms: number): string {

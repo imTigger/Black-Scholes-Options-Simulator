@@ -167,7 +167,7 @@ export default function ChainPanel({
             </table>
           </div>
           <p className="chain-note">
-            B adds a long leg at the mid price, S a short one.{' '}
+            L adds a long leg at the mid price, S a short one.{' '}
             {rows.length > visible.length ? (
               <button className="reset-link" style={{ margin: 0 }} onClick={() => setShowAll(true)}>
                 Show all {rows.length} strikes
@@ -198,15 +198,15 @@ function SideButtons({
     <span className="bs-btns">
       <button
         className="buy"
-        title={`Buy @ ${fmtNum(midPrice(opt), 2)}`}
+        title={`Long @ ${fmtNum(midPrice(opt), 2)}`}
         disabled={disabled}
         onClick={() => onAdd(opt, expiry, 1)}
       >
-        B
+        L
       </button>
       <button
         className="sell"
-        title={`Sell @ ${fmtNum(midPrice(opt), 2)}`}
+        title={`Short @ ${fmtNum(midPrice(opt), 2)}`}
         disabled={disabled}
         onClick={() => onAdd(opt, expiry, -1)}
       >

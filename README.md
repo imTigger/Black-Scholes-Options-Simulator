@@ -5,9 +5,13 @@ moomoo/Futu's **Price Forecast** card but for whole strategies, not just single 
 
 Pick a real option chain, build a position — single leg or multi-leg (spreads, straddles,
 strangles, iron condors, butterflies, calendars/diagonals) — then drag three sliders to see
-what the position would be worth:
+what the position would be worth. Each leg's strike is a dropdown constrained so a template
+position keeps its shape: strikes that would break the strategy (wings crossing the body,
+a spread inverting) are disabled, and legs sharing a strike (straddle or iron-butterfly
+bodies) move together.
 
-- **When** — any date from today to the last expiry
+- **When** — any date from today to the last expiry, at day or minute resolution
+  (toggle next to the label — minutes matter for 0DTE)
 - **Price** — the forecast underlying price
 - **IV** — implied volatility (absolute for a single leg, relative shift for multi-leg)
 

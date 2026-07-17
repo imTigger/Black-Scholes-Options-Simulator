@@ -255,6 +255,7 @@ export default function App() {
             </div>
             <LegsPanel
               legs={legs}
+              slices={slices}
               spot={spot}
               rate={rate}
               now={now}

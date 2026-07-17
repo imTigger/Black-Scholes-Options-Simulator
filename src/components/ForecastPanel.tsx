@@ -1,5 +1,12 @@
-import { useMemo } from 'react'
-import { fmtDateShort, fmtNum, fmtSignedMoney, fmtSignedPct } from '../lib/format'
+import { useMemo, useState } from 'react'
+import {
+  fmtDateShort,
+  fmtDateTimeShort,
+  fmtElapsed,
+  fmtNum,
+  fmtSignedMoney,
+  fmtSignedPct,
+} from '../lib/format'
 import {
   legExpiryClose,
   MS_DAY,
@@ -25,7 +32,11 @@ function trackFill(frac: number): React.CSSProperties {
   }
 }
 
+const MS_MIN = 60_000
+
 export default function ForecastPanel({ legs, spot, rate, now, forecast, onChange }: Props) {
+  // Minute resolution matters for 0DTE positions where whole days are too coarse
+  const [minuteRes, setMinuteRes] = useState(false)
   const maxDate = useMemo(
     () => (legs.length ? Math.max(...legs.map(legExpiryClose)) : now + 30 * MS_DAY),
     [legs, now],
@@ -35,6 +46,8 @@ export default function ForecastPanel({ legs, spot, rate, now, forecast, onChang
     totalDays,
     Math.max(0, Math.round((forecast.date - now) / MS_DAY)),
   )
+  const totalMins = Math.max(1, Math.round((maxDate - now) / MS_MIN))
+  const minIndex = Math.min(totalMins, Math.max(0, Math.round((forecast.date - now) / MS_MIN)))
 
   const [priceLo, priceHi] = useMemo(() => priceDomain(legs, spot), [legs, spot])
   const priceStep = Math.max(0.01, +((priceHi - priceLo) / 500).toFixed(2))
@@ -57,6 +70,8 @@ export default function ForecastPanel({ legs, spot, rate, now, forecast, onChang
   const effIvPct = singleLeg ? singleLeg.iv * (1 + forecast.ivShift) * 100 : null
 
   const setDay = (k: number) => onChange({ date: Math.min(now + k * MS_DAY, maxDate) })
+  const setMin = (k: number) => onChange({ date: Math.min(now + k * MS_MIN, maxDate) })
+  const clampedDate = Math.min(forecast.date, maxDate)
 
   return (
     <div>
@@ -64,26 +79,53 @@ export default function ForecastPanel({ legs, spot, rate, now, forecast, onChang
         {/* When */}
         <div className="frow">
           <div className="flabel">
-            When <small>T+{dayIndex}d</small>
+            When{' '}
+            <button
+              className="res-toggle"
+              onClick={() => setMinuteRes((v) => !v)}
+              title="Toggle slider resolution — minutes help with 0DTE positions"
+              aria-pressed={minuteRes}
+            >
+              {minuteRes ? 'min' : 'day'}
+            </button>
+            <small>{minuteRes ? fmtElapsed(clampedDate - now) : `T+${dayIndex}d`}</small>
           </div>
-          <div className="fval" aria-label="Forecast date">
-            {fmtDateShort(Math.min(forecast.date, maxDate))}
+          <div
+            className="fval"
+            style={minuteRes ? { fontSize: 11.5, paddingInline: 4 } : undefined}
+            aria-label="Forecast date"
+          >
+            {minuteRes ? fmtDateTimeShort(clampedDate) : fmtDateShort(clampedDate)}
           </div>
           <div className="ftrack">
-            <input
-              type="range"
-              className="slider"
-              min={0}
-              max={totalDays}
-              step={1}
-              value={dayIndex}
-              style={trackFill(dayIndex / totalDays)}
-              onChange={(e) => setDay(+e.target.value)}
-              aria-label="Days forward"
-            />
+            {minuteRes ? (
+              <input
+                type="range"
+                className="slider"
+                min={0}
+                max={totalMins}
+                step={1}
+                value={minIndex}
+                style={trackFill(minIndex / totalMins)}
+                onChange={(e) => setMin(+e.target.value)}
+                aria-label="Minutes forward"
+              />
+            ) : (
+              <input
+                type="range"
+                className="slider"
+                min={0}
+                max={totalDays}
+                step={1}
+                value={dayIndex}
+                style={trackFill(dayIndex / totalDays)}
+                onChange={(e) => setDay(+e.target.value)}
+                aria-label="Days forward"
+              />
+            )}
             <div className="fends">
-              <span>{fmtDateShort(now)}</span>
-              <span>{fmtDateShort(maxDate)}</span>
+              <span>{minuteRes ? fmtDateTimeShort(now) : fmtDateShort(now)}</span>
+              <span>{minuteRes ? fmtDateTimeShort(maxDate) : fmtDateShort(maxDate)}</span>
             </div>
           </div>
         </div>
