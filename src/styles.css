@@ -296,11 +296,17 @@ select {
   font-size: 13px;
 }
 
+.rate-group {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-left: auto;
+}
+
 .rate-ctl {
   display: flex;
   align-items: center;
   gap: 7px;
-  margin-left: auto;
   color: var(--muted);
   font-size: 12px;
 }

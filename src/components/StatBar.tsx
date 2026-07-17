@@ -15,10 +15,11 @@ interface Props {
   legs: Leg[]
   spot: number
   rate: number
+  marginPct: number
   forecast: Forecast
 }
 
-export default function StatBar({ legs, spot, rate, forecast }: Props) {
+export default function StatBar({ legs, spot, rate, marginPct, forecast }: Props) {
   const stats = useMemo(() => {
     if (!legs.length || !(spot > 0)) return null
     const cost = positionCost(legs)
@@ -51,10 +52,10 @@ export default function StatBar({ legs, spot, rate, forecast }: Props) {
       breakevens: findBreakevens(plExpiry, domain),
       maxProfit: upUnbounded || upUnboundedLo ? Infinity : maxP,
       maxLoss,
-      margin: marginEstimate(legs, spot, maxLoss),
+      margin: marginEstimate(legs, spot, maxLoss, marginPct),
       greeks,
     }
-  }, [legs, spot, rate, forecast])
+  }, [legs, spot, rate, marginPct, forecast])
 
   if (!stats) return null
 

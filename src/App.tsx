@@ -23,6 +23,7 @@ interface Persisted {
   legs: Leg[]
   forecast: Forecast
   rate: number
+  marginPct?: number
 }
 
 function loadPersisted(): Persisted | null {
@@ -49,6 +50,7 @@ export default function App() {
   const [activeExpiry, setActiveExpiry] = useState<number | null>(null)
   const [legs, setLegs] = useState<Leg[]>(persisted.current?.legs ?? [])
   const [rate, setRate] = useState(persisted.current?.rate ?? 0.045)
+  const [marginPct, setMarginPct] = useState(persisted.current?.marginPct ?? 0.2)
   const [forecast, setForecast] = useState<Forecast>(
     persisted.current?.forecast ?? { date: now, price: 0, ivShift: 0 },
   )
@@ -67,9 +69,9 @@ export default function App() {
   }, [now])
 
   useEffect(() => {
-    const data: Persisted = { symbol, legs, forecast, rate }
+    const data: Persisted = { symbol, legs, forecast, rate, marginPct }
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
-  }, [symbol, legs, forecast, rate])
+  }, [symbol, legs, forecast, rate, marginPct])
 
   /** Deep-ITM contracts often come back with iv=0 — recover it from the mid price. */
   const sanitizeLegs = useCallback(
@@ -214,7 +216,9 @@ export default function App() {
           loading={loading}
           offline={source === 'sample'}
           rate={rate}
+          marginPct={marginPct}
           onRate={setRate}
+          onMarginPct={setMarginPct}
           onLoad={(s) => void loadSymbol(s)}
         />
       </header>
@@ -301,7 +305,13 @@ export default function App() {
             </section>
           )}
 
-          <StatBar legs={legs} spot={spot} rate={rate} forecast={forecast} />
+          <StatBar
+            legs={legs}
+            spot={spot}
+            rate={rate}
+            marginPct={marginPct}
+            forecast={forecast}
+          />
         </div>
       </div>
     </div>

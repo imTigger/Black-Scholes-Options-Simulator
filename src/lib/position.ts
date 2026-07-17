@@ -83,11 +83,17 @@ export function positionGreeks(
 /**
  * Reg-T-style initial margin estimate. Defined-risk positions require their
  * max loss; uncovered short tails use the standard naked formula —
- * premium + max(20% of underlying − OTM amount, 10% floor) — with coverage
- * assigned long-vs-short per side and the opposite naked side's premium
- * added (short-straddle rule). Brokers differ; this is an estimate.
+ * premium + max(nakedPct of underlying − OTM amount, nakedPct/2 floor) —
+ * with coverage assigned long-vs-short per side and the opposite naked
+ * side's premium added (short-straddle rule). nakedPct defaults to Reg-T's
+ * 20%; brokers differ, so it's a setting.
  */
-export function marginEstimate(legs: Leg[], spot: number, maxLoss: number): number {
+export function marginEstimate(
+  legs: Leg[],
+  spot: number,
+  maxLoss: number,
+  nakedPct = 0.2,
+): number {
   const side = (kind: 'call' | 'put') => {
     const shorts = legs
       .filter((l) => l.kind === kind && l.side === -1)
@@ -103,8 +109,8 @@ export function marginEstimate(legs: Leg[], spot: number, maxLoss: number): numb
       const n = Math.min(uncovered, l.qty)
       uncovered -= n
       const otm = kind === 'call' ? Math.max(0, l.strike - spot) : Math.max(0, spot - l.strike)
-      const floor = kind === 'call' ? 0.1 * spot : 0.1 * l.strike
-      req += n * CONTRACT_MULTIPLIER * (l.entryPrice + Math.max(0.2 * spot - otm, floor))
+      const floor = (nakedPct / 2) * (kind === 'call' ? spot : l.strike)
+      req += n * CONTRACT_MULTIPLIER * (l.entryPrice + Math.max(nakedPct * spot - otm, floor))
       premium += n * CONTRACT_MULTIPLIER * l.entryPrice
     }
     return { req, premium }

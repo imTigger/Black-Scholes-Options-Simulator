@@ -8,11 +8,22 @@ interface Props {
   loading: boolean
   offline: boolean
   rate: number
+  marginPct: number
   onRate: (r: number) => void
+  onMarginPct: (p: number) => void
   onLoad: (symbol: string) => void
 }
 
-export default function TickerBar({ quote, loading, offline, rate, onRate, onLoad }: Props) {
+export default function TickerBar({
+  quote,
+  loading,
+  offline,
+  rate,
+  marginPct,
+  onRate,
+  onMarginPct,
+  onLoad,
+}: Props) {
   const [text, setText] = useState('')
   const [hits, setHits] = useState<SearchHit[]>([])
   const [open, setOpen] = useState(false)
@@ -115,20 +126,40 @@ export default function TickerBar({ quote, loading, offline, rate, onRate, onLoa
 
       {offline && <span className="badge-offline">Sample data</span>}
 
-      <label className="rate-ctl">
-        Risk-free rate
-        <input
-          type="number"
-          step="0.1"
-          value={+(rate * 100).toFixed(2)}
-          onChange={(e) => {
-            const v = parseFloat(e.target.value)
-            if (Number.isFinite(v)) onRate(v / 100)
-          }}
-          aria-label="Risk-free rate percent"
-        />
-        %
-      </label>
+      <span className="rate-group">
+        <label className="rate-ctl">
+          Risk-free rate
+          <input
+            type="number"
+            step="0.1"
+            value={+(rate * 100).toFixed(2)}
+            onChange={(e) => {
+              const v = parseFloat(e.target.value)
+              if (Number.isFinite(v)) onRate(v / 100)
+            }}
+            aria-label="Risk-free rate percent"
+          />
+          %
+        </label>
+        <label
+          className="rate-ctl"
+          title="Percent of the underlying used in the naked-short margin formula (Reg-T: 20%). The OTM floor is half of it."
+        >
+          Naked margin
+          <input
+            type="number"
+            step="1"
+            min={1}
+            value={+(marginPct * 100).toFixed(1)}
+            onChange={(e) => {
+              const v = parseFloat(e.target.value)
+              if (Number.isFinite(v) && v > 0) onMarginPct(v / 100)
+            }}
+            aria-label="Naked short margin percent of underlying"
+          />
+          %
+        </label>
+      </span>
     </div>
   )
 }
