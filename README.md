@@ -93,3 +93,7 @@ investment advice.
 
 Vite + React + TypeScript, no runtime dependencies beyond React. The chart is hand-rolled SVG.
 State persists to `localStorage` (symbol, legs, forecast, rate).
+
+## License
+
+[MIT](LICENSE)

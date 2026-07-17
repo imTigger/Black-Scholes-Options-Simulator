@@ -111,6 +111,7 @@ const en: Dict = {
     'chart.be': 'BE',
     'source.aria': 'Data source',
     'md.tokenPh': 'API token (optional)',
+    'footer.source': 'Source code',
   },
   strategies: {},
   hints: {},
@@ -212,6 +213,7 @@ const zhCN: Dict = {
     'chart.be': '平衡点',
     'source.aria': '数据源',
     'md.tokenPh': 'API 令牌（可选）',
+    'footer.source': '源代码',
   },
   strategies: {
     'No position': '无持仓',
@@ -349,6 +351,7 @@ const zhTW: Dict = {
     'chart.be': '平衡點',
     'source.aria': '數據源',
     'md.tokenPh': 'API 權杖（可選）',
+    'footer.source': '原始碼',
   },
   strategies: {
     'No position': '無持倉',
