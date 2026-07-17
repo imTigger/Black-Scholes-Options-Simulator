@@ -1,9 +1,17 @@
 import { useEffect, useRef, useState } from 'react'
+import type { Source } from '../App'
 import { fmtNum, fmtSignedPct } from '../lib/format'
 import { useI18n } from '../lib/i18n'
 import { LANGS, type Lang } from '../lib/locales'
 import type { Quote } from '../lib/types'
 import { searchSymbols, type SearchHit } from '../lib/yahoo'
+
+const SOURCE_LABELS: Record<Source, string> = {
+  cboe: 'Cboe',
+  yahoo: 'Yahoo',
+  marketdata: 'MarketData',
+  sample: 'sample',
+}
 
 interface Props {
   quote: Quote | null
@@ -11,10 +19,14 @@ interface Props {
   offline: boolean
   rate: number
   marginPct: number
-  tradierToken: string
+  sources: Source[]
+  source: Source | null
+  mdToken: string
+  searchEnabled: boolean
+  onSource: (s: Source) => void
+  onMdToken: (t: string) => void
   onRate: (r: number) => void
   onMarginPct: (p: number) => void
-  onTradierToken: (t: string) => void
   onLoad: (symbol: string) => void
 }
 
@@ -24,10 +36,14 @@ export default function TickerBar({
   offline,
   rate,
   marginPct,
-  tradierToken,
+  sources,
+  source,
+  mdToken,
+  searchEnabled,
+  onSource,
+  onMdToken,
   onRate,
   onMarginPct,
-  onTradierToken,
   onLoad,
 }: Props) {
   const { t, lang, setLang } = useI18n()
@@ -39,7 +55,7 @@ export default function TickerBar({
 
   useEffect(() => {
     const q = text.trim()
-    if (q.length < 1) {
+    if (q.length < 1 || !searchEnabled) {
       setHits([])
       return
     }
@@ -53,7 +69,7 @@ export default function TickerBar({
         .catch(() => setHits([]))
     }, 250)
     return () => clearTimeout(t)
-  }, [text])
+  }, [text, searchEnabled])
 
   useEffect(() => {
     const close = (e: MouseEvent) => {
@@ -117,6 +133,32 @@ export default function TickerBar({
         )}
       </div>
 
+      <select
+        className="lang-select"
+        value={source ?? 'marketdata'}
+        onChange={(e) => onSource(e.target.value as Source)}
+        aria-label={t('source.aria')}
+        title={t('source.aria')}
+      >
+        {sources.map((s) => (
+          <option key={s} value={s}>
+            {s === 'sample' ? t('badge.sample') : SOURCE_LABELS[s]}
+          </option>
+        ))}
+      </select>
+
+      {source === 'marketdata' && (
+        <input
+          className="token-input"
+          type="password"
+          autoComplete="off"
+          placeholder={t('md.tokenPh')}
+          value={mdToken}
+          onChange={(e) => onMdToken(e.target.value)}
+          aria-label="marketdata.app API token"
+        />
+      )}
+
       {loading && <span className="spin" aria-label="Loading quote" />}
 
       {quote && (
@@ -162,18 +204,6 @@ export default function TickerBar({
             aria-label="Naked short margin percent of underlying"
           />
           %
-        </label>
-        <label className="rate-ctl" title={t('token.tooltip')}>
-          {t('token.label')}
-          <input
-            type="password"
-            autoComplete="off"
-            style={{ width: 110, textAlign: 'left' }}
-            placeholder={t('token.placeholder')}
-            value={tradierToken}
-            onChange={(e) => onTradierToken(e.target.value.trim())}
-            aria-label="Tradier API token"
-          />
         </label>
         <select
           className="lang-select"

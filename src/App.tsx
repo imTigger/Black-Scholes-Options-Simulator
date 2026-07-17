@@ -9,17 +9,16 @@ import { impliedVol } from './lib/blackScholes'
 import { fetchCboeChain } from './lib/cboe'
 import { fmtDateShortUTC } from './lib/format'
 import { useI18n } from './lib/i18n'
+import { fetchMarketdataChain, fetchMarketdataSlice, probeProxy } from './lib/marketdata'
 import { legExpiryClose, yearsBetween } from './lib/position'
 import { sampleChain } from './lib/sampleData'
 import { describePosition, legFromChain } from './lib/strategies'
-import { fetchTradierChain } from './lib/tradier'
 import type { ChainOption, ChainSlice, Forecast, Leg, Quote } from './lib/types'
 import { fetchChain } from './lib/yahoo'
 
 const STORAGE_KEY = 'options-lab-v1'
-const TOKEN_KEY = 'options-lab-tradier-token'
 
-type Source = 'cboe' | 'tradier' | 'yahoo' | 'sample'
+export type Source = 'cboe' | 'yahoo' | 'marketdata' | 'sample'
 
 interface Persisted {
   symbol: string
@@ -27,6 +26,8 @@ interface Persisted {
   forecast: Forecast
   rate: number
   marginPct?: number
+  source?: Source
+  mdToken?: string
 }
 
 function loadPersisted(): Persisted | null {
@@ -48,6 +49,8 @@ export default function App() {
 
   const [symbol, setSymbol] = useState(persisted.current?.symbol ?? 'AAPL')
   const [source, setSource] = useState<Source | null>(null)
+  const [proxyAvailable, setProxyAvailable] = useState<boolean | null>(null)
+  const [mdToken, setMdToken] = useState(persisted.current?.mdToken ?? '')
   const [quote, setQuote] = useState<Quote | null>(null)
   const [expirations, setExpirations] = useState<number[]>([])
   const [slices, setSlices] = useState<Record<number, ChainSlice>>({})
@@ -55,12 +58,6 @@ export default function App() {
   const [legs, setLegs] = useState<Leg[]>(persisted.current?.legs ?? [])
   const [rate, setRate] = useState(persisted.current?.rate ?? 0.045)
   const [marginPct, setMarginPct] = useState(persisted.current?.marginPct ?? 0.2)
-  const [tradierToken, setTradierToken] = useState(
-    () => localStorage.getItem(TOKEN_KEY) ?? '',
-  )
-  useEffect(() => {
-    localStorage.setItem(TOKEN_KEY, tradierToken)
-  }, [tradierToken])
   const [forecast, setForecast] = useState<Forecast>(
     persisted.current?.forecast ?? { date: now, price: 0, ivShift: 0 },
   )
@@ -79,9 +76,17 @@ export default function App() {
   }, [now])
 
   useEffect(() => {
-    const data: Persisted = { symbol, legs, forecast, rate, marginPct }
+    const data: Persisted = {
+      symbol,
+      legs,
+      forecast,
+      rate,
+      marginPct,
+      source: source ?? undefined,
+      mdToken: mdToken || undefined,
+    }
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
-  }, [symbol, legs, forecast, rate, marginPct])
+  }, [symbol, legs, forecast, rate, marginPct, source, mdToken])
 
   /** Deep-ITM contracts often come back with iv=0 — recover it from the mid price. */
   const sanitizeLegs = useCallback(
@@ -129,92 +134,6 @@ export default function App() {
     [now],
   )
 
-  const loadSymbol = useCallback(
-    async (sym: string, keepLegs = false) => {
-      setLoading(true)
-      setError(null)
-      try {
-        const res = await fetchCboeChain(sym)
-        setSymbol(res.quote.symbol)
-        applyLoaded({ ...res, source: 'cboe' }, keepLegs)
-      } catch (cboeErr) {
-        // Static hosting has no proxy — Tradier (CORS-open, user token) and
-        // Yahoo (dev-proxy only) are the fallbacks, in that order.
-        const lazySources: Array<{
-          source: Source
-          fetch: () => Promise<{ quote: Quote; expirations: number[]; slice: ChainSlice }>
-        }> = []
-        if (tradierToken)
-          lazySources.push({
-            source: 'tradier',
-            fetch: () => fetchTradierChain(sym, tradierToken),
-          })
-        lazySources.push({ source: 'yahoo', fetch: () => fetchChain(sym) })
-
-        let loaded = false
-        for (const cand of lazySources) {
-          try {
-            const res = await cand.fetch()
-            setSymbol(res.quote.symbol)
-            applyLoaded(
-              {
-                quote: res.quote,
-                expirations: res.expirations,
-                slices: { [res.slice.expiry]: res.slice },
-                source: cand.source,
-              },
-              keepLegs,
-            )
-            loaded = true
-            break
-          } catch {
-            /* try the next source */
-          }
-        }
-        if (!loaded) {
-          const base = t('error.body', {
-            sym,
-            msg: String(cboeErr instanceof Error ? cboeErr.message : cboeErr),
-          })
-          setError(tradierToken ? base : `${base} ${t('error.tokenHint')}`)
-        }
-      } finally {
-        setLoading(false)
-      }
-    },
-    [applyLoaded, t, tradierToken],
-  )
-
-  // Boot: restore last symbol, keeping restored legs
-  useEffect(() => {
-    void loadSymbol(symbol, (persisted.current?.legs.length ?? 0) > 0)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  const loadExpiry = useCallback(
-    async (ms: number) => {
-      if (slices[ms] || (source !== 'yahoo' && source !== 'tradier')) {
-        if (slices[ms]) setActiveExpiry(ms)
-        return
-      }
-      setChainLoading(true)
-      try {
-        const res =
-          source === 'tradier'
-            ? await fetchTradierChain(symbol, tradierToken, ms)
-            : await fetchChain(symbol, ms)
-        setSlices((s) => ({ ...s, [res.slice.expiry]: res.slice }))
-        setActiveExpiry(res.slice.expiry)
-        setQuote(res.quote)
-      } catch {
-        setError(t('error.expiry', { date: fmtDateShortUTC(ms) }))
-      } finally {
-        setChainLoading(false)
-      }
-    },
-    [slices, source, symbol, t, tradierToken],
-  )
-
   const useSample = useCallback(() => {
     const res = sampleChain()
     const all: Record<number, ChainSlice> = { [res.slice.expiry]: res.slice }
@@ -223,8 +142,120 @@ export default function App() {
     }
     setSymbol(res.quote.symbol)
     setError(null)
-    applyLoaded({ quote: res.quote, expirations: res.expirations, slices: all, source: 'sample' }, false)
+    applyLoaded(
+      { quote: res.quote, expirations: res.expirations, slices: all, source: 'sample' },
+      false,
+    )
   }, [applyLoaded])
+
+  const loadSymbol = useCallback(
+    async (sym: string, keepLegs = false, src?: Source) => {
+      const from = src ?? source ?? 'marketdata'
+      if (from === 'sample') {
+        useSample()
+        return
+      }
+      setLoading(true)
+      setError(null)
+      try {
+        if (from === 'cboe') {
+          const res = await fetchCboeChain(sym)
+          setSymbol(res.quote.symbol)
+          applyLoaded({ ...res, source: 'cboe' }, keepLegs)
+        } else if (from === 'yahoo') {
+          const res = await fetchChain(sym)
+          setSymbol(res.quote.symbol)
+          applyLoaded(
+            {
+              quote: res.quote,
+              expirations: res.expirations,
+              slices: { [res.slice.expiry]: res.slice },
+              source: 'yahoo',
+            },
+            keepLegs,
+          )
+        } else {
+          const res = await fetchMarketdataChain(sym, undefined, mdToken)
+          setSymbol(res.quote.symbol)
+          applyLoaded(
+            {
+              quote: res.quote,
+              expirations: res.expirations,
+              slices: { [res.slice.expiry]: res.slice },
+              source: 'marketdata',
+            },
+            keepLegs,
+          )
+        }
+      } catch (err) {
+        setError(
+          t('error.body', { sym, msg: String(err instanceof Error ? err.message : err) }),
+        )
+      } finally {
+        setLoading(false)
+      }
+    },
+    [applyLoaded, t, source, mdToken, useSample],
+  )
+
+  // Boot: detect whether the proxy routes exist, pick a source, restore state
+  useEffect(() => {
+    void (async () => {
+      const hasProxy = await probeProxy()
+      setProxyAvailable(hasProxy)
+      const saved = persisted.current?.source
+      const src: Source =
+        saved && (hasProxy || saved === 'marketdata' || saved === 'sample')
+          ? saved
+          : hasProxy
+            ? 'cboe'
+            : 'marketdata'
+      setSource(src)
+      void loadSymbol(symbol, (persisted.current?.legs.length ?? 0) > 0, src)
+    })()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const loadExpiry = useCallback(
+    async (ms: number) => {
+      if (slices[ms]) {
+        setActiveExpiry(ms)
+        return
+      }
+      if (source !== 'yahoo' && source !== 'marketdata') return
+      setChainLoading(true)
+      try {
+        if (source === 'yahoo') {
+          const res = await fetchChain(symbol, ms)
+          setSlices((s) => ({ ...s, [res.slice.expiry]: res.slice }))
+          setActiveExpiry(res.slice.expiry)
+          setQuote(res.quote)
+        } else {
+          const { slice } = await fetchMarketdataSlice(symbol, ms, mdToken)
+          setSlices((s) => ({ ...s, [slice.expiry]: slice }))
+          setActiveExpiry(slice.expiry)
+        }
+      } catch {
+        setError(t('error.expiry', { date: fmtDateShortUTC(ms) }))
+      } finally {
+        setChainLoading(false)
+      }
+    },
+    [slices, source, symbol, mdToken, t],
+  )
+
+  const changeSource = useCallback(
+    (src: Source) => {
+      setSource(src)
+      if (src === 'sample') {
+        useSample()
+      } else {
+        const sym = symbol === 'DEMO' ? 'AAPL' : symbol
+        void loadSymbol(sym, true, src)
+      }
+    },
+    [symbol, loadSymbol, useSample],
+  )
 
   const addLeg = useCallback(
     (opt: ChainOption, expiry: number, side: 1 | -1) => {
@@ -235,6 +266,10 @@ export default function App() {
 
   const activeSlice = activeExpiry !== null ? (slices[activeExpiry] ?? null) : null
   const positionName = describePosition(legs)
+  const availableSources: Source[] =
+    proxyAvailable === true
+      ? ['cboe', 'yahoo', 'marketdata', 'sample']
+      : ['marketdata', 'sample']
 
   return (
     <div className="shell">
@@ -251,10 +286,14 @@ export default function App() {
           offline={source === 'sample'}
           rate={rate}
           marginPct={marginPct}
-          tradierToken={tradierToken}
+          sources={availableSources}
+          source={source}
+          mdToken={mdToken}
+          searchEnabled={proxyAvailable === true}
+          onSource={changeSource}
+          onMdToken={setMdToken}
           onRate={setRate}
           onMarginPct={setMarginPct}
-          onTradierToken={setTradierToken}
           onLoad={(s) => void loadSymbol(s)}
         />
       </header>

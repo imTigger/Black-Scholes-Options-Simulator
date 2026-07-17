@@ -85,8 +85,6 @@ const cboeProxy = {
 }
 
 export default defineConfig({
-  // Relative asset paths so the build can be dropped into any static directory
-  base: './',
   plugins: [react(), yahooProxy()],
   // Cboe delayed quotes: full option chain, no auth. /api/cboe/AAPL.json
   server: { proxy: cboeProxy },

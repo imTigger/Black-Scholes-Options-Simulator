@@ -26,35 +26,35 @@ npm install
 npm run dev
 ```
 
-## Static deployment (no server-side proxy)
+A source picker next to the search box lists whichever data sources are reachable:
 
-`npm run build` produces a fully static `dist/` (relative asset paths — works from any
-directory). Copy it to any web server:
-
-```sh
-npm run build
-rsync -av dist/ user@server:/var/www/options-lab/
-```
-
-Without the dev proxy, browsers can't reach Cboe/Yahoo (CORS), so live data on a static
-deployment comes from **Tradier**, whose API is CORS-open: create a free account at
-tradier.com, grab an API token, and paste it into the "Tradier" field in the top bar. It's
-stored only in your browser's localStorage and sent only to Tradier. Without a token, the
-app falls back to the built-in sample data — every simulation feature still works.
-
-## Data sources
-
-The dev (and `vite preview`) server proxies market data:
-
-- **Cboe delayed quotes** (primary) — `cdn.cboe.com/api/global/delayed_quotes/options/<SYM>.json`,
-  the full chain for every expiry in one request, ~15-minute delayed, no auth.
-- **Yahoo Finance** (fallback) — quote + chain per expiry; the proxy handles Yahoo's
-  cookie/crumb dance. Also powers ticker-search suggestions. Yahoo aggressively rate-limits,
-  so it's the backup.
-- **Tradier** (static hosting) — CORS-open API used directly from the browser when a
-  token is set; per-expiry chains with ORATS mid IV.
+- **Cboe delayed quotes** — full chain for every expiry in one request, ~15-minute delayed,
+  no auth. Not CORS-enabled, so it needs the dev/preview proxy (or a reverse-proxy rule on
+  your host) and is hidden otherwise.
+- **Yahoo Finance** — quote + chain per expiry via the proxy (cookie/crumb dance included).
+  Also powers ticker-search suggestions. Aggressively rate-limited; proxy-only, hidden
+  otherwise.
+- **marketdata.app** — CORS-open, works **without any server or key** from their cached/trial
+  feed (per-expiry chains with IV and greeks). An optional API token (input appears when the
+  source is selected) lifts their limits. This is the source a static deploy runs on.
 - **Sample data** (offline) — a synthetic chain under the ticker `DEMO` so the simulator
   works with no network at all.
+
+## Static deployment (CloudFront, S3, nginx, any file host)
+
+`npm run build`, upload `dist/` — that's it. On boot the app probes for the proxy routes;
+when they don't exist it offers marketdata.app + sample data and runs fully client-side.
+No server code, no environment flags, one build for both modes.
+
+If your static host is nginx/Caddy and you want the richer Cboe feed, add a reverse-proxy
+rule and the Cboe/Yahoo sources light up automatically:
+
+```nginx
+location /api/cboe/ {
+  proxy_pass https://cdn.cboe.com/api/global/delayed_quotes/options/;
+  proxy_set_header User-Agent "Mozilla/5.0";
+}
+```
 
 Symbols: any optionable US stock/ETF (`AAPL`, `TSLA`, `SPY`…) and Cboe indexes (`SPX`, `VIX`).
 
