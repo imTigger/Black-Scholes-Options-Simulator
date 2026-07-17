@@ -187,12 +187,20 @@ select {
   position: relative;
 }
 
+/* every control in the top bar shares one height */
+.search input,
+.lang-select,
+.token-input,
+.rate-ctl input {
+  height: 34px;
+  border-radius: 8px;
+}
+
 .search input {
   width: 210px;
   background: var(--surface-2);
   border: 1px solid var(--line);
-  border-radius: 8px;
-  padding: 8px 12px 8px 34px;
+  padding: 0 12px 0 34px;
   font-family: var(--mono);
   font-size: 13px;
   letter-spacing: 0.03em;
@@ -313,10 +321,9 @@ select {
 .lang-select {
   background: var(--surface-2);
   border: 1px solid var(--line);
-  border-radius: 6px;
   color: var(--muted);
   font-size: 12px;
-  padding: 5px 8px;
+  padding: 0 8px;
   cursor: pointer;
 }
 
@@ -329,8 +336,7 @@ select {
   width: 150px;
   background: var(--surface-2);
   border: 1px solid var(--line);
-  border-radius: 6px;
-  padding: 6px 9px;
+  padding: 0 9px;
   font-family: var(--mono);
   font-size: 12px;
   color: var(--ink);
@@ -345,8 +351,7 @@ select {
   width: 62px;
   background: var(--surface-2);
   border: 1px solid var(--line);
-  border-radius: 6px;
-  padding: 5px 8px;
+  padding: 0 8px;
   font-family: var(--mono);
   font-size: 12.5px;
   text-align: right;
