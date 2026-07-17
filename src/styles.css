@@ -335,7 +335,11 @@ select {
   overflow-x: auto;
   padding-bottom: 8px;
   margin-bottom: 10px;
-  scrollbar-width: thin;
+  scrollbar-width: none;
+}
+
+.expiry-row::-webkit-scrollbar {
+  display: none;
 }
 
 .chip {
@@ -368,6 +372,18 @@ select {
   max-height: 520px;
   border: 1px solid var(--line-soft);
   border-radius: 10px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+}
+
+.chain-wrap::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.chain-wrap::-webkit-scrollbar-thumb {
+  background: var(--line);
+  border-radius: 3px;
 }
 
 table.chain {
@@ -378,7 +394,6 @@ table.chain {
 
 table.chain th {
   position: sticky;
-  top: 0;
   background: var(--surface-2);
   color: var(--faint);
   font-family: var(--cond);
@@ -386,9 +401,21 @@ table.chain th {
   font-size: 10.5px;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  padding: 7px 8px;
+  padding: 6px 5px;
   text-align: right;
   z-index: 2;
+}
+
+/* Both header rows stay pinned: the group row at 0, MID/IV right below it */
+table.chain thead tr:first-child th {
+  top: 0;
+  height: 26px;
+  box-sizing: border-box;
+}
+
+table.chain thead tr:nth-child(2) th {
+  top: 26px;
+  box-shadow: 0 1px 0 var(--line-soft);
 }
 
 table.chain th.side-head {
@@ -397,7 +424,7 @@ table.chain th.side-head {
 }
 
 table.chain td {
-  padding: 4px 6px;
+  padding: 4px 5px;
   text-align: right;
   border-top: 1px solid var(--line-soft);
   font-family: var(--mono);
@@ -426,7 +453,19 @@ table.chain tr.atm td {
 
 .bs-btns {
   display: inline-flex;
-  gap: 4px;
+  gap: 3px;
+}
+
+/* Narrow screens: drop the IV columns so the chain never scrolls sideways */
+@media (max-width: 560px) {
+  .col-iv {
+    display: none;
+  }
+
+  table.chain td,
+  table.chain th {
+    padding-inline: 4px;
+  }
 }
 
 .bs-btns button {

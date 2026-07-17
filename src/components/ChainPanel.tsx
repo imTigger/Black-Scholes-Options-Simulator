@@ -130,9 +130,9 @@ export default function ChainPanel({
                 <tr>
                   <th />
                   <th>Mid</th>
-                  <th>IV</th>
+                  <th className="col-iv">IV</th>
                   <th />
-                  <th>IV</th>
+                  <th className="col-iv">IV</th>
                   <th>Mid</th>
                   <th />
                 </tr>
@@ -154,9 +154,13 @@ export default function ChainPanel({
                       {r.call && <SideButtons opt={r.call} expiry={slice.expiry} onAdd={onAddLeg} />}
                     </td>
                     <td className="c">{r.call ? fmtNum(midPrice(r.call), 2) : '—'}</td>
-                    <td className="c muted">{r.call?.iv ? fmtNum(r.call.iv * 100, 1) : '—'}</td>
+                    <td className="c muted col-iv">
+                      {r.call?.iv ? fmtNum(r.call.iv * 100, 1) : '—'}
+                    </td>
                     <td className="strike">{fmtNum(r.strike, r.strike % 1 ? 2 : 0)}</td>
-                    <td className="p muted">{r.put?.iv ? fmtNum(r.put.iv * 100, 1) : '—'}</td>
+                    <td className="p muted col-iv">
+                      {r.put?.iv ? fmtNum(r.put.iv * 100, 1) : '—'}
+                    </td>
                     <td className="p">{r.put ? fmtNum(midPrice(r.put), 2) : '—'}</td>
                     <td className="p">
                       {r.put && <SideButtons opt={r.put} expiry={slice.expiry} onAdd={onAddLeg} />}
