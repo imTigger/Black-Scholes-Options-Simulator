@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { fmtDateShortUTC, fmtNum } from '../lib/format'
 import { useI18n } from '../lib/i18n'
 import { STRATEGY_PRESETS } from '../lib/strategies'
@@ -34,6 +34,19 @@ export default function ChainPanel({
   const { t, tStrat, tHint } = useI18n()
   const [showAll, setShowAll] = useState(false)
   const [presetError, setPresetError] = useState(false)
+  const expiryRowRef = useRef<HTMLDivElement>(null)
+
+  // Center the active chip by moving only the chip row's own scroller —
+  // scrollIntoView would also scroll the page (a jolt on mobile, where the
+  // chain sits below the fold) and re-fire on every render.
+  useEffect(() => {
+    const row = expiryRowRef.current
+    if (!row || activeExpiry === null) return
+    const chip = row.querySelector<HTMLElement>(`[data-exp="${activeExpiry}"]`)
+    if (chip) {
+      row.scrollLeft = chip.offsetLeft - row.clientWidth / 2 + chip.clientWidth / 2
+    }
+  }, [activeExpiry, expirations])
 
   const rows = useMemo(() => {
     if (!slice) return []
@@ -99,14 +112,11 @@ export default function ChainPanel({
         {loading && <span className="spin" aria-label="Loading" />}
       </div>
 
-      <div className="expiry-row">
+      <div className="expiry-row" ref={expiryRowRef}>
         {expirations.map((ms) => (
           <button
             key={ms}
-            ref={(el) => {
-              if (el && ms === activeExpiry)
-                el.scrollIntoView({ inline: 'center', block: 'nearest' })
-            }}
+            data-exp={ms}
             className={`chip ${ms === activeExpiry ? 'active' : ''}`}
             onClick={() => onSelectExpiry(ms)}
           >

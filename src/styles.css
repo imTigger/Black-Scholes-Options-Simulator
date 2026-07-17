@@ -979,6 +979,17 @@ input[type='range'].slider::-moz-range-thumb {
   border-top-style: dashed;
 }
 
+@media (max-width: 720px) {
+  .chart-legend {
+    font-size: 13.5px;
+    gap: 20px;
+  }
+
+  .chart-legend .swatch {
+    width: 20px;
+  }
+}
+
 .chart-svg-wrap {
   position: relative;
 }

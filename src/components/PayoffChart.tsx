@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { fmtDateShortUTC, fmtMoney, fmtNum, fmtSignedMoney } from '../lib/format'
 import { useI18n } from '../lib/i18n'
 import {
@@ -17,16 +17,30 @@ interface Props {
   rate: number
 }
 
-const W = 860
-const H = 360
-const M = { top: 16, right: 16, bottom: 30, left: 62 }
-const IW = W - M.left - M.right
-const IH = H - M.top - M.bottom
+const M = { top: 16, right: 16, bottom: 30, left: 56 }
 const SAMPLES = 240
 
 export default function PayoffChart({ legs, spot, forecast, rate }: Props) {
   const { t } = useI18n()
   const [hoverS, setHoverS] = useState<number | null>(null)
+  const wrapRef = useRef<HTMLDivElement>(null)
+
+  // The viewBox tracks the container so SVG text renders at natural size on
+  // narrow screens instead of scaling down with a fixed-width canvas.
+  const [W, setW] = useState(860)
+  useEffect(() => {
+    const el = wrapRef.current
+    if (!el) return
+    const ro = new ResizeObserver((entries) => {
+      const cw = entries[0]?.contentRect.width ?? 0
+      if (cw > 40) setW(Math.max(320, Math.min(960, Math.round(cw))))
+    })
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [])
+  const H = W < 560 ? 300 : 360
+  const IW = W - M.left - M.right
+  const IH = H - M.top - M.bottom
 
   const model = useMemo(() => {
     if (!legs.length || !(spot > 0)) return null
@@ -72,7 +86,6 @@ export default function PayoffChart({ legs, spot, forecast, rate }: Props) {
       yMax,
       sx,
       sy,
-      xs,
       plExpiry,
       plDate,
       pathExpiry: line(yeExp),
@@ -82,7 +95,7 @@ export default function PayoffChart({ legs, spot, forecast, rate }: Props) {
       frontExpiry,
       cost,
     }
-  }, [legs, spot, forecast.date, forecast.ivShift, rate])
+  }, [legs, spot, forecast.date, forecast.ivShift, rate, IW, IH])
 
   if (!model) {
     return (
@@ -94,8 +107,8 @@ export default function PayoffChart({ legs, spot, forecast, rate }: Props) {
 
   const { lo, hi, yMin, yMax, sx, sy } = model
 
-  const yTicks = niceTicks(yMin, yMax, 5)
-  const xTicks = niceTicks(lo, hi, 7)
+  const yTicks = niceTicks(yMin, yMax, W < 560 ? 4 : 5)
+  const xTicks = niceTicks(lo, hi, W < 560 ? 4 : 7)
 
   const hover =
     hoverS !== null
@@ -119,7 +132,7 @@ export default function PayoffChart({ legs, spot, forecast, rate }: Props) {
   const tipFlip = hover ? hover.x > W * 0.62 : false
 
   return (
-    <div className="chart-svg-wrap">
+    <div className="chart-svg-wrap" ref={wrapRef}>
       <svg
         viewBox={`0 0 ${W} ${H}`}
         role="img"
@@ -142,39 +155,39 @@ export default function PayoffChart({ legs, spot, forecast, rate }: Props) {
         </defs>
 
         {/* gridlines + y labels */}
-        {yTicks.map((t) => (
-          <g key={`y${t}`}>
+        {yTicks.map((tk) => (
+          <g key={`y${tk}`}>
             <line
               x1={M.left}
               x2={W - M.right}
-              y1={sy(t)}
-              y2={sy(t)}
+              y1={sy(tk)}
+              y2={sy(tk)}
               stroke="var(--line-soft)"
               strokeWidth="1"
             />
             <text
               x={M.left - 8}
-              y={sy(t) + 3.5}
+              y={sy(tk) + 3.5}
               textAnchor="end"
               fontSize="10.5"
               fill="var(--muted)"
               fontFamily="var(--mono)"
             >
-              {Math.abs(t) >= 1000 ? `${fmtNum(t / 1000, 1)}k` : fmtNum(t, 0)}
+              {Math.abs(tk) >= 1000 ? `${fmtNum(tk / 1000, 1)}k` : fmtNum(tk, 0)}
             </text>
           </g>
         ))}
-        {xTicks.map((t) => (
+        {xTicks.map((tk) => (
           <text
-            key={`x${t}`}
-            x={sx(t)}
+            key={`x${tk}`}
+            x={sx(tk)}
             y={H - 10}
             textAnchor="middle"
             fontSize="10.5"
             fill="var(--muted)"
             fontFamily="var(--mono)"
           >
-            {fmtNum(t, t < 20 ? 1 : 0)}
+            {fmtNum(tk, tk < 20 ? 1 : 0)}
           </text>
         ))}
 
