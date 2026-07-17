@@ -11,8 +11,10 @@ interface Props {
   offline: boolean
   rate: number
   marginPct: number
+  tradierToken: string
   onRate: (r: number) => void
   onMarginPct: (p: number) => void
+  onTradierToken: (t: string) => void
   onLoad: (symbol: string) => void
 }
 
@@ -22,8 +24,10 @@ export default function TickerBar({
   offline,
   rate,
   marginPct,
+  tradierToken,
   onRate,
   onMarginPct,
+  onTradierToken,
   onLoad,
 }: Props) {
   const { t, lang, setLang } = useI18n()
@@ -158,6 +162,18 @@ export default function TickerBar({
             aria-label="Naked short margin percent of underlying"
           />
           %
+        </label>
+        <label className="rate-ctl" title={t('token.tooltip')}>
+          {t('token.label')}
+          <input
+            type="password"
+            autoComplete="off"
+            style={{ width: 110, textAlign: 'left' }}
+            placeholder={t('token.placeholder')}
+            value={tradierToken}
+            onChange={(e) => onTradierToken(e.target.value.trim())}
+            aria-label="Tradier API token"
+          />
         </label>
         <select
           className="lang-select"

@@ -12,12 +12,14 @@ import { useI18n } from './lib/i18n'
 import { legExpiryClose, yearsBetween } from './lib/position'
 import { sampleChain } from './lib/sampleData'
 import { describePosition, legFromChain } from './lib/strategies'
+import { fetchTradierChain } from './lib/tradier'
 import type { ChainOption, ChainSlice, Forecast, Leg, Quote } from './lib/types'
 import { fetchChain } from './lib/yahoo'
 
 const STORAGE_KEY = 'options-lab-v1'
+const TOKEN_KEY = 'options-lab-tradier-token'
 
-type Source = 'cboe' | 'yahoo' | 'sample'
+type Source = 'cboe' | 'tradier' | 'yahoo' | 'sample'
 
 interface Persisted {
   symbol: string
@@ -53,6 +55,12 @@ export default function App() {
   const [legs, setLegs] = useState<Leg[]>(persisted.current?.legs ?? [])
   const [rate, setRate] = useState(persisted.current?.rate ?? 0.045)
   const [marginPct, setMarginPct] = useState(persisted.current?.marginPct ?? 0.2)
+  const [tradierToken, setTradierToken] = useState(
+    () => localStorage.getItem(TOKEN_KEY) ?? '',
+  )
+  useEffect(() => {
+    localStorage.setItem(TOKEN_KEY, tradierToken)
+  }, [tradierToken])
   const [forecast, setForecast] = useState<Forecast>(
     persisted.current?.forecast ?? { date: now, price: 0, ivShift: 0 },
   )
@@ -130,31 +138,51 @@ export default function App() {
         setSymbol(res.quote.symbol)
         applyLoaded({ ...res, source: 'cboe' }, keepLegs)
       } catch (cboeErr) {
-        try {
-          const res = await fetchChain(sym)
-          setSymbol(res.quote.symbol)
-          applyLoaded(
-            {
-              quote: res.quote,
-              expirations: res.expirations,
-              slices: { [res.slice.expiry]: res.slice },
-              source: 'yahoo',
-            },
-            keepLegs,
-          )
-        } catch {
-          setError(
-            t('error.body', {
-              sym,
-              msg: String(cboeErr instanceof Error ? cboeErr.message : cboeErr),
-            }),
-          )
+        // Static hosting has no proxy — Tradier (CORS-open, user token) and
+        // Yahoo (dev-proxy only) are the fallbacks, in that order.
+        const lazySources: Array<{
+          source: Source
+          fetch: () => Promise<{ quote: Quote; expirations: number[]; slice: ChainSlice }>
+        }> = []
+        if (tradierToken)
+          lazySources.push({
+            source: 'tradier',
+            fetch: () => fetchTradierChain(sym, tradierToken),
+          })
+        lazySources.push({ source: 'yahoo', fetch: () => fetchChain(sym) })
+
+        let loaded = false
+        for (const cand of lazySources) {
+          try {
+            const res = await cand.fetch()
+            setSymbol(res.quote.symbol)
+            applyLoaded(
+              {
+                quote: res.quote,
+                expirations: res.expirations,
+                slices: { [res.slice.expiry]: res.slice },
+                source: cand.source,
+              },
+              keepLegs,
+            )
+            loaded = true
+            break
+          } catch {
+            /* try the next source */
+          }
+        }
+        if (!loaded) {
+          const base = t('error.body', {
+            sym,
+            msg: String(cboeErr instanceof Error ? cboeErr.message : cboeErr),
+          })
+          setError(tradierToken ? base : `${base} ${t('error.tokenHint')}`)
         }
       } finally {
         setLoading(false)
       }
     },
-    [applyLoaded, t],
+    [applyLoaded, t, tradierToken],
   )
 
   // Boot: restore last symbol, keeping restored legs
@@ -165,13 +193,16 @@ export default function App() {
 
   const loadExpiry = useCallback(
     async (ms: number) => {
-      if (slices[ms] || source !== 'yahoo') {
+      if (slices[ms] || (source !== 'yahoo' && source !== 'tradier')) {
         if (slices[ms]) setActiveExpiry(ms)
         return
       }
       setChainLoading(true)
       try {
-        const res = await fetchChain(symbol, ms)
+        const res =
+          source === 'tradier'
+            ? await fetchTradierChain(symbol, tradierToken, ms)
+            : await fetchChain(symbol, ms)
         setSlices((s) => ({ ...s, [res.slice.expiry]: res.slice }))
         setActiveExpiry(res.slice.expiry)
         setQuote(res.quote)
@@ -181,7 +212,7 @@ export default function App() {
         setChainLoading(false)
       }
     },
-    [slices, source, symbol, t],
+    [slices, source, symbol, t, tradierToken],
   )
 
   const useSample = useCallback(() => {
@@ -220,8 +251,10 @@ export default function App() {
           offline={source === 'sample'}
           rate={rate}
           marginPct={marginPct}
+          tradierToken={tradierToken}
           onRate={setRate}
           onMarginPct={setMarginPct}
+          onTradierToken={setTradierToken}
           onLoad={(s) => void loadSymbol(s)}
         />
       </header>

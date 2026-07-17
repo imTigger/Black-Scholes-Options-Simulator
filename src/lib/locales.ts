@@ -29,6 +29,12 @@ const en: Dict = {
     'error.expiry': 'Could not load the {date} expiry. Try again.',
     'btn.retry': 'Retry',
     'btn.sample': 'Use sample data',
+    'token.label': 'Tradier',
+    'token.placeholder': 'API token',
+    'token.tooltip':
+      'Optional. Static hosting has no data proxy — paste a free Tradier API token (tradier.com) and chains load straight from your browser.',
+    'error.tokenHint':
+      'Tip: paste a free Tradier API token (top right) to load live data without any proxy.',
     'panel.templates': 'Strategy templates',
     'panel.templates.sub': 'replaces current legs',
     'panel.chain': 'Option chain',
@@ -129,6 +135,11 @@ const zhCN: Dict = {
     'error.expiry': '无法加载 {date} 到期的期权链，请重试。',
     'btn.retry': '重试',
     'btn.sample': '使用示例数据',
+    'token.label': 'Tradier',
+    'token.placeholder': 'API 令牌',
+    'token.tooltip':
+      '可选。静态部署没有数据代理——填入免费的 Tradier API 令牌（tradier.com），即可直接在浏览器加载期权链。',
+    'error.tokenHint': '提示：在右上角填入免费的 Tradier API 令牌，即可无需代理加载实时数据。',
     'panel.templates': '策略模板',
     'panel.templates.sub': '将替换当前腿',
     'panel.chain': '期权链',
@@ -264,6 +275,11 @@ const zhTW: Dict = {
     'error.expiry': '無法載入 {date} 到期的期權鏈，請重試。',
     'btn.retry': '重試',
     'btn.sample': '使用示範數據',
+    'token.label': 'Tradier',
+    'token.placeholder': 'API 權杖',
+    'token.tooltip':
+      '可選。靜態部署沒有數據代理——填入免費的 Tradier API 權杖（tradier.com），即可直接在瀏覽器載入期權鏈。',
+    'error.tokenHint': '提示：在右上角填入免費的 Tradier API 權杖，即可無需代理載入即時數據。',
     'panel.templates': '策略範本',
     'panel.templates.sub': '將替換目前腿',
     'panel.chain': '期權鏈',
