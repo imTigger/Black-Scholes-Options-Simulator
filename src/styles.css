@@ -19,9 +19,9 @@
   --down: #f0544f;
   --up-dim: rgba(61, 214, 140, 0.14);
   --down-dim: rgba(240, 84, 79, 0.14);
-  --sans: 'IBM Plex Sans', system-ui, sans-serif;
-  --cond: 'IBM Plex Sans Condensed', var(--sans);
-  --mono: 'IBM Plex Mono', ui-monospace, monospace;
+  --sans: 'IBM Plex Sans', 'Noto Sans SC', 'Noto Sans TC', system-ui, sans-serif;
+  --cond: 'IBM Plex Sans Condensed', 'Noto Sans SC', 'Noto Sans TC', var(--sans);
+  --mono: 'IBM Plex Mono', ui-monospace, monospace, 'Noto Sans SC', 'Noto Sans TC';
   --radius: 12px;
   color-scheme: dark;
 }
@@ -309,6 +309,21 @@ select {
   gap: 7px;
   color: var(--muted);
   font-size: 12px;
+}
+
+.lang-select {
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: var(--muted);
+  font-size: 12px;
+  padding: 5px 8px;
+  cursor: pointer;
+}
+
+.lang-select:hover {
+  color: var(--ink);
+  border-color: var(--muted);
 }
 
 .rate-ctl input {

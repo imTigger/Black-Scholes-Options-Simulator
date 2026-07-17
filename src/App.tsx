@@ -8,6 +8,7 @@ import TickerBar from './components/TickerBar'
 import { impliedVol } from './lib/blackScholes'
 import { fetchCboeChain } from './lib/cboe'
 import { fmtDateShortUTC } from './lib/format'
+import { useI18n } from './lib/i18n'
 import { legExpiryClose, yearsBetween } from './lib/position'
 import { sampleChain } from './lib/sampleData'
 import { describePosition, legFromChain } from './lib/strategies'
@@ -39,6 +40,7 @@ function loadPersisted(): Persisted | null {
 }
 
 export default function App() {
+  const { t, tStrat } = useI18n()
   const persisted = useRef(loadPersisted())
   const now = useMemo(() => Date.now(), [])
 
@@ -142,16 +144,17 @@ export default function App() {
           )
         } catch {
           setError(
-            `Could not load live data for “${sym}” — ` +
-              `${cboeErr instanceof Error ? cboeErr.message : cboeErr}. ` +
-              'Check the ticker (US-listed, optionable), retry, or explore with sample data.',
+            t('error.body', {
+              sym,
+              msg: String(cboeErr instanceof Error ? cboeErr.message : cboeErr),
+            }),
           )
         }
       } finally {
         setLoading(false)
       }
     },
-    [applyLoaded],
+    [applyLoaded, t],
   )
 
   // Boot: restore last symbol, keeping restored legs
@@ -173,12 +176,12 @@ export default function App() {
         setActiveExpiry(res.slice.expiry)
         setQuote(res.quote)
       } catch {
-        setError(`Could not load the ${fmtDateShortUTC(ms)} expiry. Try again.`)
+        setError(t('error.expiry', { date: fmtDateShortUTC(ms) }))
       } finally {
         setChainLoading(false)
       }
     },
-    [slices, source, symbol],
+    [slices, source, symbol, t],
   )
 
   const useSample = useCallback(() => {
@@ -209,7 +212,7 @@ export default function App() {
           <span className="mark">
             options<span>·</span>lab
           </span>
-          <span className="tag">Black-Scholes simulator</span>
+          <span className="tag">{t('tagline')}</span>
         </div>
         <TickerBar
           quote={quote}
@@ -226,13 +229,13 @@ export default function App() {
       {error && (
         <div className="notice" style={{ marginBottom: 18 }}>
           <span>
-            <strong>Data unavailable.</strong> {error}
+            <strong>{t('error.title')}</strong> {error}
           </span>
           <button className="btn" onClick={() => void loadSymbol(symbol, true)}>
-            Retry
+            {t('btn.retry')}
           </button>
           <button className="btn primary" onClick={useSample}>
-            Use sample data
+            {t('btn.sample')}
           </button>
         </div>
       )}
@@ -257,8 +260,8 @@ export default function App() {
         <div className="col">
           <section className="panel">
             <div className="panel-head">
-              <span className="eyebrow">Position</span>
-              <span className="panel-sub">{positionName}</span>
+              <span className="eyebrow">{t('panel.position')}</span>
+              <span className="panel-sub">{tStrat(positionName)}</span>
             </div>
             <LegsPanel
               legs={legs}
@@ -273,15 +276,15 @@ export default function App() {
 
           <section className="panel chart-panel">
             <div className="panel-head">
-              <span className="eyebrow">Payoff</span>
+              <span className="eyebrow">{t('panel.payoff')}</span>
               <div className="chart-legend">
                 <span className="li">
                   <span className="swatch" style={{ borderColor: 'var(--blue-chart)' }} />
-                  At expiry
+                  {t('legend.expiry')}
                 </span>
                 <span className="li">
                   <span className="swatch dashed" style={{ borderColor: 'var(--amber-chart)' }} />
-                  On forecast date
+                  {t('legend.forecast')}
                 </span>
               </div>
             </div>
@@ -291,8 +294,8 @@ export default function App() {
           {legs.length > 0 && (
             <section className="panel">
               <div className="panel-head">
-                <span className="eyebrow">Price forecast</span>
-                <span className="panel-sub">what-if: time · price · volatility</span>
+                <span className="eyebrow">{t('panel.forecast')}</span>
+                <span className="panel-sub">{t('panel.forecast.sub')}</span>
               </div>
               <ForecastPanel
                 legs={legs}

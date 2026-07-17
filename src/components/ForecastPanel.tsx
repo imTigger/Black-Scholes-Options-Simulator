@@ -7,6 +7,7 @@ import {
   fmtSignedMoney,
   fmtSignedPct,
 } from '../lib/format'
+import { useI18n } from '../lib/i18n'
 import {
   legExpiryClose,
   MS_DAY,
@@ -35,6 +36,7 @@ function trackFill(frac: number): React.CSSProperties {
 const MS_MIN = 60_000
 
 export default function ForecastPanel({ legs, spot, rate, now, forecast, onChange }: Props) {
+  const { t } = useI18n()
   // Minute resolution matters for 0DTE positions where whole days are too coarse
   const [minuteRes, setMinuteRes] = useState(false)
   const maxDate = useMemo(
@@ -79,14 +81,14 @@ export default function ForecastPanel({ legs, spot, rate, now, forecast, onChang
         {/* When */}
         <div className="frow">
           <div className="flabel">
-            When{' '}
+            {t('fc.when')}{' '}
             <button
               className="res-toggle"
               onClick={() => setMinuteRes((v) => !v)}
-              title="Toggle slider resolution — minutes help with 0DTE positions"
+              title={t('fc.resTip')}
               aria-pressed={minuteRes}
             >
-              {minuteRes ? 'min' : 'day'}
+              {minuteRes ? t('fc.min') : t('fc.day')}
             </button>
             <small>{minuteRes ? fmtElapsed(clampedDate - now) : `T+${dayIndex}d`}</small>
           </div>
@@ -133,10 +135,10 @@ export default function ForecastPanel({ legs, spot, rate, now, forecast, onChang
         {/* Price */}
         <div className="frow">
           <div className="flabel">
-            Price{' '}
+            {t('fc.price')}{' '}
             <small>
               {spot > 0 && forecast.price > 0
-                ? fmtSignedPct(forecast.price / spot - 1, 1) + ' vs spot'
+                ? t('fc.vsSpot', { v: fmtSignedPct(forecast.price / spot - 1, 1) })
                 : ''}
             </small>
           </div>
@@ -173,8 +175,12 @@ export default function ForecastPanel({ legs, spot, rate, now, forecast, onChang
         {/* IV */}
         <div className="frow">
           <div className="flabel">
-            {singleLeg ? 'IV%' : 'IV shift'}{' '}
-            <small>{singleLeg ? `entry ${fmtNum(singleLeg.iv * 100, 1)}%` : 'all legs, relative'}</small>
+            {singleLeg ? 'IV%' : t('fc.ivShift')}{' '}
+            <small>
+              {singleLeg
+                ? t('fc.ivEntry', { v: fmtNum(singleLeg.iv * 100, 1) })
+                : t('fc.allLegs')}
+            </small>
           </div>
           {singleLeg ? (
             <input
@@ -225,12 +231,12 @@ export default function ForecastPanel({ legs, spot, rate, now, forecast, onChang
         {singleLeg && estPerShare !== null ? (
           <>
             <div className="fr-item">
-              <span className="fr-label">Option price (est.)</span>
+              <span className="fr-label">{t('fc.optPrice')}</span>
               <span className="fr-num accent">{fmtNum(estPerShare, 2)}</span>
             </div>
             {singleDiff !== null && (
               <div className="fr-item">
-                <span className="fr-label">Difference</span>
+                <span className="fr-label">{t('fc.diff')}</span>
                 <span className={`fr-num ${singleDiff >= 0 ? 'up' : 'down'}`}>
                   {fmtSignedPct(singleDiff)}
                 </span>
@@ -239,12 +245,12 @@ export default function ForecastPanel({ legs, spot, rate, now, forecast, onChang
           </>
         ) : (
           <div className="fr-item">
-            <span className="fr-label">Strategy value (est.)</span>
+            <span className="fr-label">{t('fc.value')}</span>
             <span className="fr-num accent">{fmtSignedMoney(value).replace('+', '')}</span>
           </div>
         )}
         <div className="fr-item">
-          <span className="fr-label">P/L</span>
+          <span className="fr-label">{t('fc.pl')}</span>
           <span className={`fr-num ${pl >= 0 ? 'up' : 'down'}`}>
             {fmtSignedMoney(pl)}
             {Number.isFinite(plPct) ? ` (${fmtSignedPct(plPct, 1)})` : ''}
@@ -254,14 +260,11 @@ export default function ForecastPanel({ legs, spot, rate, now, forecast, onChang
           className="reset-link"
           onClick={() => onChange({ date: now, price: spot, ivShift: 0 })}
         >
-          Reset to today
+          {t('fc.reset')}
         </button>
       </div>
 
-      <p className="disclaimer">
-        Prices are theoretical values from the Black-Scholes model with your inputs — for
-        reference only, not investment advice.
-      </p>
+      <p className="disclaimer">{t('fc.disclaimer')}</p>
     </div>
   )
 }

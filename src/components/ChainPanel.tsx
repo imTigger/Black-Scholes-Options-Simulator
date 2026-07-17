@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { fmtDateShortUTC, fmtNum } from '../lib/format'
+import { useI18n } from '../lib/i18n'
 import { STRATEGY_PRESETS } from '../lib/strategies'
 import { midPrice, type ChainOption, type ChainSlice, type Leg } from '../lib/types'
 
@@ -30,8 +31,9 @@ export default function ChainPanel({
   onAddLeg,
   onApplyPreset,
 }: Props) {
+  const { t, tStrat, tHint } = useI18n()
   const [showAll, setShowAll] = useState(false)
-  const [presetError, setPresetError] = useState<string | null>(null)
+  const [presetError, setPresetError] = useState(false)
 
   const rows = useMemo(() => {
     if (!slice) return []
@@ -61,8 +63,8 @@ export default function ChainPanel({
   return (
     <div className="panel">
       <div className="panel-head">
-        <span className="eyebrow">Strategy templates</span>
-        <span className="panel-sub">replaces current legs</span>
+        <span className="eyebrow">{t('panel.templates')}</span>
+        <span className="panel-sub">{t('panel.templates.sub')}</span>
       </div>
       <div className="preset-grid">
         {STRATEGY_PRESETS.map((p) => (
@@ -73,27 +75,27 @@ export default function ChainPanel({
               if (!slice) return
               const legs = p.build(slice, spot)
               if (legs) {
-                setPresetError(null)
+                setPresetError(false)
                 onApplyPreset(legs)
               } else {
-                setPresetError('Not enough quoted strikes at this expiry to build that strategy.')
+                setPresetError(true)
               }
             }}
             disabled={!slice}
           >
-            <div className="pn">{p.name}</div>
-            <div className="ph">{p.hint}</div>
+            <div className="pn">{tStrat(p.name)}</div>
+            <div className="ph">{tHint(p.key, p.hint)}</div>
           </button>
         ))}
       </div>
       {presetError && (
         <p className="chain-note" style={{ color: 'var(--down)' }}>
-          {presetError}
+          {t('chain.presetError')}
         </p>
       )}
 
       <div className="panel-head" style={{ marginTop: 20 }}>
-        <span className="eyebrow">Option chain</span>
+        <span className="eyebrow">{t('panel.chain')}</span>
         {loading && <span className="spin" aria-label="Loading" />}
       </div>
 
@@ -120,20 +122,20 @@ export default function ChainPanel({
               <thead>
                 <tr>
                   <th className="side-head" colSpan={3}>
-                    Calls
+                    {t('chain.calls')}
                   </th>
-                  <th style={{ textAlign: 'center' }}>Strike</th>
+                  <th style={{ textAlign: 'center' }}>{t('chain.strike')}</th>
                   <th className="side-head" colSpan={3}>
-                    Puts
+                    {t('chain.puts')}
                   </th>
                 </tr>
                 <tr>
                   <th />
-                  <th>Mid</th>
+                  <th>{t('chain.mid')}</th>
                   <th className="col-iv">IV</th>
                   <th />
                   <th className="col-iv">IV</th>
-                  <th>Mid</th>
+                  <th>{t('chain.mid')}</th>
                   <th />
                 </tr>
               </thead>
@@ -171,14 +173,14 @@ export default function ChainPanel({
             </table>
           </div>
           <p className="chain-note">
-            L adds a long leg at the mid price, S a short one.{' '}
+            {t('chain.note')}{' '}
             {rows.length > visible.length ? (
               <button className="reset-link" style={{ margin: 0 }} onClick={() => setShowAll(true)}>
-                Show all {rows.length} strikes
+                {t('chain.showAll', { n: rows.length })}
               </button>
             ) : rows.length > 25 ? (
               <button className="reset-link" style={{ margin: 0 }} onClick={() => setShowAll(false)}>
-                Show fewer strikes
+                {t('chain.showFewer')}
               </button>
             ) : null}
           </p>
@@ -197,12 +199,13 @@ function SideButtons({
   expiry: number
   onAdd: (opt: ChainOption, expiry: number, side: 1 | -1) => void
 }) {
+  const { t } = useI18n()
   const disabled = midPrice(opt) <= 0
   return (
     <span className="bs-btns">
       <button
         className="buy"
-        title={`Long @ ${fmtNum(midPrice(opt), 2)}`}
+        title={t('chain.long', { p: fmtNum(midPrice(opt), 2) })}
         disabled={disabled}
         onClick={() => onAdd(opt, expiry, 1)}
       >
@@ -210,7 +213,7 @@ function SideButtons({
       </button>
       <button
         className="sell"
-        title={`Short @ ${fmtNum(midPrice(opt), 2)}`}
+        title={t('chain.short', { p: fmtNum(midPrice(opt), 2) })}
         disabled={disabled}
         onClick={() => onAdd(opt, expiry, -1)}
       >

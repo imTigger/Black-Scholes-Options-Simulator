@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { impliedVol } from '../lib/blackScholes'
 import { fmtDateShortUTC, fmtNum, fmtSignedPct } from '../lib/format'
+import { useI18n } from '../lib/i18n'
 import { legExpiryClose, legPrice, yearsBetween } from '../lib/position'
 import { newLegId } from '../lib/strategies'
 import { midPrice, type ChainSlice, type Forecast, type Leg, type OptionKind } from '../lib/types'
@@ -113,6 +114,7 @@ function StrikeSelect({
 }
 
 export default function LegsPanel({ legs, slices, spot, rate, now, forecast, onChange }: Props) {
+  const { t } = useI18n()
   const [showForm, setShowForm] = useState(false)
 
   const patchLeg = (id: string, patch: Partial<Leg>) =>
@@ -121,21 +123,18 @@ export default function LegsPanel({ legs, slices, spot, rate, now, forecast, onC
   return (
     <div>
       {legs.length === 0 ? (
-        <div className="legs-empty">
-          No legs yet. Pick contracts from the option chain, start from a strategy template, or
-          add a custom leg.
-        </div>
+        <div className="legs-empty">{t('legs.empty')}</div>
       ) : (
         <div style={{ overflowX: 'auto' }}>
           <table className="legs-table">
             <thead>
               <tr>
-                <th>Leg</th>
-                <th>Qty</th>
-                <th>Entry</th>
-                <th>Est. now</th>
-                <th>Est. forecast</th>
-                <th>Diff</th>
+                <th>{t('legs.leg')}</th>
+                <th>{t('legs.qty')}</th>
+                <th>{t('legs.entry')}</th>
+                <th>{t('legs.estNow')}</th>
+                <th>{t('legs.estForecast')}</th>
+                <th>{t('legs.diff')}</th>
                 <th>IV</th>
                 <th aria-label="Remove" />
               </tr>
@@ -150,7 +149,7 @@ export default function LegsPanel({ legs, slices, spot, rate, now, forecast, onC
                   <tr key={leg.id}>
                     <td>
                       <span className={`side-pill ${leg.side === 1 ? 'long' : 'short'}`}>
-                        {leg.side === 1 ? 'LONG' : 'SHORT'}
+                        {leg.side === 1 ? t('long') : t('short')}
                       </span>
                       <span className="leg-desc">
                         <StrikeSelect
@@ -209,21 +208,21 @@ export default function LegsPanel({ legs, slices, spot, rate, now, forecast, onC
 
       <div className="legs-actions">
         <button className="btn" onClick={() => setShowForm((v) => !v)}>
-          {showForm ? 'Close custom leg' : '+ Custom leg'}
+          {showForm ? t('legs.customClose') : t('legs.custom')}
         </button>
         {legs.length > 0 && (
           <>
             <button
               className="btn"
-              title="Invert every leg — long becomes short and vice versa"
+              title={t('legs.flipTip')}
               onClick={() =>
                 onChange(legs.map((l) => ({ ...l, side: -l.side as 1 | -1 })))
               }
             >
-              ⇄ Flip L/S
+              {t('legs.flip')}
             </button>
             <button className="btn" onClick={() => onChange([])}>
-              Clear all
+              {t('legs.clear')}
             </button>
           </>
         )}
@@ -255,6 +254,7 @@ function CustomLegForm({
   now: number
   onAdd: (leg: Leg) => void
 }) {
+  const { t } = useI18n()
   const defaultExpiry = new Date(now + 30 * 24 * 3600 * 1000).toISOString().slice(0, 10)
   const [kind, setKind] = useState<OptionKind>('call')
   const [side, setSide] = useState<1 | -1>(1)
@@ -290,29 +290,29 @@ function CustomLegForm({
   return (
     <div className="custom-form">
       <label>
-        Type
+        {t('form.type')}
         <select value={kind} onChange={(e) => setKind(e.target.value as OptionKind)}>
-          <option value="call">Call</option>
-          <option value="put">Put</option>
+          <option value="call">{t('form.call')}</option>
+          <option value="put">{t('form.put')}</option>
         </select>
       </label>
       <label>
-        Side
+        {t('form.side')}
         <select value={side} onChange={(e) => setSide(+e.target.value as 1 | -1)}>
-          <option value={1}>Long</option>
-          <option value={-1}>Short</option>
+          <option value={1}>{t('form.long')}</option>
+          <option value={-1}>{t('form.short')}</option>
         </select>
       </label>
       <label>
-        Qty
+        {t('legs.qty')}
         <input type="number" min={1} value={qty} onChange={(e) => setQty(+e.target.value)} />
       </label>
       <label>
-        Strike
+        {t('form.strike')}
         <input type="number" step="0.5" value={strike} onChange={(e) => setStrike(+e.target.value)} />
       </label>
       <label>
-        Expiry
+        {t('form.expiry')}
         <input type="date" value={dateStr} onChange={(e) => setDateStr(e.target.value)} />
       </label>
       <label>
@@ -320,19 +320,19 @@ function CustomLegForm({
         <input type="number" step="0.5" min={1} value={ivPct} onChange={(e) => setIvPct(+e.target.value)} />
       </label>
       <label>
-        Entry price
+        {t('form.entry')}
         <input
           type="number"
           step="0.01"
           min={0}
-          placeholder="model"
+          placeholder={t('form.model')}
           value={price}
           onChange={(e) => setPrice(e.target.value)}
         />
       </label>
       <div className="span-all">
         <button className="btn primary" onClick={submit}>
-          Add leg
+          {t('form.add')}
         </button>
       </div>
     </div>

@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { fmtDateShortUTC, fmtMoney, fmtNum, fmtSignedMoney } from '../lib/format'
+import { useI18n } from '../lib/i18n'
 import {
   findBreakevens,
   legExpiryClose,
@@ -24,6 +25,7 @@ const IH = H - M.top - M.bottom
 const SAMPLES = 240
 
 export default function PayoffChart({ legs, spot, forecast, rate }: Props) {
+  const { t } = useI18n()
   const [hoverS, setHoverS] = useState<number | null>(null)
 
   const model = useMemo(() => {
@@ -85,7 +87,7 @@ export default function PayoffChart({ legs, spot, forecast, rate }: Props) {
   if (!model) {
     return (
       <div className="legs-empty" style={{ padding: '64px 0' }}>
-        The payoff chart appears here once the position has at least one leg.
+        {t('chart.empty')}
       </div>
     )
   }
@@ -221,7 +223,7 @@ export default function PayoffChart({ legs, spot, forecast, rate }: Props) {
               fill="var(--muted)"
               fontFamily="var(--mono)"
             >
-              spot {fmtNum(spot, 2)}
+              {t('chart.spot')} {fmtNum(spot, 2)}
             </text>
           </g>
         )}
@@ -306,15 +308,19 @@ export default function PayoffChart({ legs, spot, forecast, rate }: Props) {
           }}
         >
           <div className="tp-row">
-            <span className="l">Price</span>
+            <span className="l">{t('chart.price')}</span>
             <span className="num">{fmtMoney(hover.s)}</span>
           </div>
           <div className="tp-row">
-            <span className="l">On {fmtDateShortUTC(Math.min(forecast.date, model.frontExpiry))}</span>
+            <span className="l">
+              {t('chart.on', {
+                date: fmtDateShortUTC(Math.min(forecast.date, model.frontExpiry)),
+              })}
+            </span>
             <span className={`num ${hover.dd >= 0 ? 'up' : 'down'}`}>{fmtSignedMoney(hover.dd)}</span>
           </div>
           <div className="tp-row">
-            <span className="l">At expiry</span>
+            <span className="l">{t('chart.atExpiry')}</span>
             <span className={`num ${hover.de >= 0 ? 'up' : 'down'}`}>{fmtSignedMoney(hover.de)}</span>
           </div>
         </div>

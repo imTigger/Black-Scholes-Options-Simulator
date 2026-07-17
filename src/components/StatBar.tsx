@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { fmtMoney, fmtNum, fmtSignedMoney } from '../lib/format'
+import { useI18n } from '../lib/i18n'
 import {
   findBreakevens,
   legExpiryClose,
@@ -20,6 +21,7 @@ interface Props {
 }
 
 export default function StatBar({ legs, spot, rate, marginPct, forecast }: Props) {
+  const { t } = useI18n()
   const stats = useMemo(() => {
     if (!legs.length || !(spot > 0)) return null
     const cost = positionCost(legs)
@@ -63,34 +65,31 @@ export default function StatBar({ legs, spot, rate, marginPct, forecast }: Props
     <div className="stat-rows">
       <div className="stat-grid">
         <div className="stat">
-          <div className="sl">{stats.cost >= 0 ? 'Net debit' : 'Net credit'}</div>
+          <div className="sl">{stats.cost >= 0 ? t('stat.netDebit') : t('stat.netCredit')}</div>
           <div className="sv">{fmtMoney(Math.abs(stats.cost))}</div>
         </div>
         <div className="stat">
-          <div className="sl">Max profit</div>
+          <div className="sl">{t('stat.maxProfit')}</div>
           <div className="sv up">
-            {stats.maxProfit === Infinity ? 'Unlimited' : fmtSignedMoney(stats.maxProfit)}
+            {stats.maxProfit === Infinity ? t('stat.unlimited') : fmtSignedMoney(stats.maxProfit)}
           </div>
         </div>
         <div className="stat">
-          <div className="sl">Max loss</div>
+          <div className="sl">{t('stat.maxLoss')}</div>
           <div className="sv down">
-            {stats.maxLoss === -Infinity ? 'Unlimited' : fmtSignedMoney(stats.maxLoss)}
+            {stats.maxLoss === -Infinity ? t('stat.unlimited') : fmtSignedMoney(stats.maxLoss)}
           </div>
         </div>
         <div className="stat">
-          <div className="sl">Breakeven</div>
+          <div className="sl">{t('stat.breakeven')}</div>
           <div className="sv">
             {stats.breakevens.length
               ? stats.breakevens.map((b) => fmtNum(b, 2)).join(' / ')
               : '—'}
           </div>
         </div>
-        <div
-          className="stat"
-          title="Reg-T style estimate: max loss for defined-risk positions, the 20% naked formula for uncovered shorts. Brokers differ."
-        >
-          <div className="sl">Margin req. (est.)</div>
+        <div className="stat" title={t('stat.marginTip')}>
+          <div className="sl">{t('stat.margin')}</div>
           <div className="sv">{fmtMoney(stats.margin)}</div>
         </div>
       </div>
@@ -98,7 +97,7 @@ export default function StatBar({ legs, spot, rate, marginPct, forecast }: Props
         <div className="stat">
           <div className="sl">Delta</div>
           <div className="sv">
-            {fmtNum(stats.greeks.delta, 1)} <small>sh</small>
+            {fmtNum(stats.greeks.delta, 1)} <small>{t('stat.sh')}</small>
           </div>
         </div>
         <div className="stat">
@@ -108,19 +107,19 @@ export default function StatBar({ legs, spot, rate, marginPct, forecast }: Props
         <div className="stat">
           <div className="sl">Theta</div>
           <div className="sv">
-            {fmtSignedMoney(stats.greeks.theta)} <small>/day</small>
+            {fmtSignedMoney(stats.greeks.theta)} <small>{t('stat.day')}</small>
           </div>
         </div>
         <div className="stat">
           <div className="sl">Vega</div>
           <div className="sv">
-            {fmtSignedMoney(stats.greeks.vega)} <small>/vol pt</small>
+            {fmtSignedMoney(stats.greeks.vega)} <small>{t('stat.volpt')}</small>
           </div>
         </div>
         <div className="stat">
           <div className="sl">Rho</div>
           <div className="sv">
-            {fmtSignedMoney(stats.greeks.rho)} <small>/1%</small>
+            {fmtSignedMoney(stats.greeks.rho)} <small>{t('stat.ratept')}</small>
           </div>
         </div>
       </div>

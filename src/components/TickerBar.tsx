@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { fmtNum, fmtSignedPct } from '../lib/format'
+import { useI18n } from '../lib/i18n'
+import { LANGS, type Lang } from '../lib/locales'
 import type { Quote } from '../lib/types'
 import { searchSymbols, type SearchHit } from '../lib/yahoo'
 
@@ -24,6 +26,7 @@ export default function TickerBar({
   onMarginPct,
   onLoad,
 }: Props) {
+  const { t, lang, setLang } = useI18n()
   const [text, setText] = useState('')
   const [hits, setHits] = useState<SearchHit[]>([])
   const [open, setOpen] = useState(false)
@@ -73,7 +76,7 @@ export default function TickerBar({
         </span>
         <input
           value={text}
-          placeholder="Search ticker — AAPL, SPY…"
+          placeholder={t('search.placeholder')}
           onChange={(e) => setText(e.target.value)}
           onFocus={() => hits.length && setOpen(true)}
           onKeyDown={(e) => {
@@ -124,11 +127,11 @@ export default function TickerBar({
         </div>
       )}
 
-      {offline && <span className="badge-offline">Sample data</span>}
+      {offline && <span className="badge-offline">{t('badge.sample')}</span>}
 
       <span className="rate-group">
         <label className="rate-ctl">
-          Risk-free rate
+          {t('rate.label')}
           <input
             type="number"
             step="0.1"
@@ -141,11 +144,8 @@ export default function TickerBar({
           />
           %
         </label>
-        <label
-          className="rate-ctl"
-          title="Percent of the underlying used in the naked-short margin formula (Reg-T: 20%). The OTM floor is half of it."
-        >
-          Naked margin
+        <label className="rate-ctl" title={t('margin.tooltip')}>
+          {t('margin.label')}
           <input
             type="number"
             step="1"
@@ -159,6 +159,18 @@ export default function TickerBar({
           />
           %
         </label>
+        <select
+          className="lang-select"
+          value={lang}
+          onChange={(e) => setLang(e.target.value as Lang)}
+          aria-label="Language"
+        >
+          {LANGS.map((l) => (
+            <option key={l.code} value={l.code}>
+              {l.label}
+            </option>
+          ))}
+        </select>
       </span>
     </div>
   )
