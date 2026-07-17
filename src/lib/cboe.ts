@@ -20,7 +20,12 @@ interface CboeOption {
 const OCC_RE = /^([A-Z.]{1,6})(\d{2})(\d{2})(\d{2})([CP])(\d{8})$/
 
 async function fetchRaw(symbol: string): Promise<any> {
-  const res = await fetch(`/api/cboe/${encodeURIComponent(symbol)}.json`)
+  let res = await fetch(`/api/cboe/${encodeURIComponent(symbol)}.json`)
+  if (res.status >= 500) {
+    // Cboe's CDN throws transient 5xx — one retry clears most of them
+    await new Promise((r) => setTimeout(r, 900))
+    res = await fetch(`/api/cboe/${encodeURIComponent(symbol)}.json`)
+  }
   if (!res.ok) throw new Error(`Cboe responded ${res.status}`)
   return res.json()
 }

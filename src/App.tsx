@@ -56,7 +56,10 @@ export default function App() {
   const [chainLoading, setChainLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const spot = quote?.price ?? 0
+  // When live data is unavailable, anchor the simulation on the forecast price
+  // so restored positions still chart and price sensibly.
+  const liveSpot = quote?.price ?? 0
+  const spot = liveSpot > 0 ? liveSpot : forecast.price
 
   // Persisted forecast dates age out — never simulate into the past
   useEffect(() => {

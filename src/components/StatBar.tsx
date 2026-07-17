@@ -56,52 +56,56 @@ export default function StatBar({ legs, spot, rate, forecast }: Props) {
   if (!stats) return null
 
   return (
-    <div className="stat-grid">
-      <div className="stat">
-        <div className="sl">{stats.cost >= 0 ? 'Net debit' : 'Net credit'}</div>
-        <div className="sv">{fmtMoney(Math.abs(stats.cost))}</div>
-      </div>
-      <div className="stat">
-        <div className="sl">Max profit</div>
-        <div className="sv up">
-          {stats.maxProfit === Infinity ? 'Unlimited' : fmtSignedMoney(stats.maxProfit)}
+    <div className="stat-rows">
+      <div className="stat-grid">
+        <div className="stat">
+          <div className="sl">{stats.cost >= 0 ? 'Net debit' : 'Net credit'}</div>
+          <div className="sv">{fmtMoney(Math.abs(stats.cost))}</div>
+        </div>
+        <div className="stat">
+          <div className="sl">Max profit</div>
+          <div className="sv up">
+            {stats.maxProfit === Infinity ? 'Unlimited' : fmtSignedMoney(stats.maxProfit)}
+          </div>
+        </div>
+        <div className="stat">
+          <div className="sl">Max loss</div>
+          <div className="sv down">
+            {stats.maxLoss === -Infinity ? 'Unlimited' : fmtSignedMoney(stats.maxLoss)}
+          </div>
+        </div>
+        <div className="stat">
+          <div className="sl">Breakeven</div>
+          <div className="sv">
+            {stats.breakevens.length
+              ? stats.breakevens.map((b) => fmtNum(b, 2)).join(' / ')
+              : '—'}
+          </div>
         </div>
       </div>
-      <div className="stat">
-        <div className="sl">Max loss</div>
-        <div className="sv down">
-          {stats.maxLoss === -Infinity ? 'Unlimited' : fmtSignedMoney(stats.maxLoss)}
+      <div className="stat-grid">
+        <div className="stat">
+          <div className="sl">Delta</div>
+          <div className="sv">
+            {fmtNum(stats.greeks.delta, 1)} <small>sh</small>
+          </div>
         </div>
-      </div>
-      <div className="stat">
-        <div className="sl">Breakeven</div>
-        <div className="sv">
-          {stats.breakevens.length
-            ? stats.breakevens.map((b) => fmtNum(b, 2)).join(' / ')
-            : '—'}
+        <div className="stat">
+          <div className="sl">Gamma</div>
+          <div className="sv">{fmtNum(stats.greeks.gamma, 2)}</div>
         </div>
-      </div>
-      <div className="stat">
-        <div className="sl">Delta</div>
-        <div className="sv">
-          {fmtNum(stats.greeks.delta, 1)} <small>sh</small>
+        <div className="stat">
+          <div className="sl">Theta</div>
+          <div className="sv">
+            {fmtSignedMoney(stats.greeks.theta)} <small>/day</small>
+          </div>
         </div>
-      </div>
-      <div className="stat">
-        <div className="sl">Theta</div>
-        <div className="sv">
-          {fmtSignedMoney(stats.greeks.theta)} <small>/day</small>
+        <div className="stat">
+          <div className="sl">Vega</div>
+          <div className="sv">
+            {fmtSignedMoney(stats.greeks.vega)} <small>/vol pt</small>
+          </div>
         </div>
-      </div>
-      <div className="stat">
-        <div className="sl">Vega</div>
-        <div className="sv">
-          {fmtSignedMoney(stats.greeks.vega)} <small>/vol pt</small>
-        </div>
-      </div>
-      <div className="stat">
-        <div className="sl">Gamma</div>
-        <div className="sv">{fmtNum(stats.greeks.gamma, 2)}</div>
       </div>
     </div>
   )
