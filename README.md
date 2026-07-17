@@ -56,6 +56,21 @@ location /api/cboe/ {
 }
 ```
 
+## Cloudflare Workers deployment (all sources, no separate server)
+
+`worker/index.ts` bundles the static app with the same `/api/cboe` + `/api/yahoo` proxy
+routes the dev server provides (Cboe responses edge-cached for 60s; the Yahoo cookie/crumb
+dance runs in the Worker). Deploy with:
+
+```sh
+npx wrangler login   # once
+npm run cf:deploy    # build + deploy
+```
+
+`npm run cf:dev` runs the same thing locally on :8787. Note: on the real edge, upstream
+requests come from Cloudflare IPs — if Cboe or Yahoo ever refuse those, the app quietly
+degrades to the marketdata.app source, same as a purely static deploy.
+
 Symbols: any optionable US stock/ETF (`AAPL`, `TSLA`, `SPY`…) and Cboe indexes (`SPX`, `VIX`).
 
 ## How pricing works
