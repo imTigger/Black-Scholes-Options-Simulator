@@ -275,7 +275,7 @@ export default function PayoffChart({ legs, spot, forecast, rate }: Props) {
               fill="var(--ink)"
               fontFamily="var(--mono)"
             >
-              BE {fmtNum(b, 2)}
+              {t('chart.be')} {fmtNum(b, 2)}
             </text>
           </g>
         ))}

@@ -108,6 +108,7 @@ const en: Dict = {
     'chart.on': 'On {date}',
     'chart.atExpiry': 'At expiry',
     'chart.spot': 'spot',
+    'chart.be': 'BE',
   },
   strategies: {},
   hints: {},
@@ -206,6 +207,7 @@ const zhCN: Dict = {
     'chart.on': '{date} 时',
     'chart.atExpiry': '到期时',
     'chart.spot': '现价',
+    'chart.be': '平衡点',
   },
   strategies: {
     'No position': '无持仓',
@@ -340,6 +342,7 @@ const zhTW: Dict = {
     'chart.on': '{date} 時',
     'chart.atExpiry': '到期時',
     'chart.spot': '現價',
+    'chart.be': '平衡點',
   },
   strategies: {
     'No position': '無持倉',
