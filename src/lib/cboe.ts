@@ -10,6 +10,8 @@ interface CboeOption {
   option: string // OCC symbol, e.g. AAPL261120P00160000
   bid: number
   ask: number
+  bid_size?: number
+  ask_size?: number
   iv: number
   open_interest: number
   volume: number
@@ -74,6 +76,8 @@ export async function fetchCboeChain(symbol: string): Promise<FullChain> {
       volume: raw.volume ?? 0,
       openInterest: raw.open_interest ?? 0,
       inTheMoney: cp === 'C' ? strike < quote.price : strike > quote.price,
+      bidSize: raw.bid_size ?? 0,
+      askSize: raw.ask_size ?? 0,
     }
     const slice = (slices[expiry] ??= { expiry, calls: [], puts: [] })
     ;(opt.kind === 'call' ? slice.calls : slice.puts).push(opt)

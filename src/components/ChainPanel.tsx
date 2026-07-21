@@ -13,6 +13,7 @@ interface Props {
   onSelectExpiry: (ms: number) => void
   onAddLeg: (opt: ChainOption, expiry: number, side: 1 | -1) => void
   onApplyPreset: (legs: Leg[]) => void
+  onOpenFull: () => void
 }
 
 interface Row {
@@ -30,6 +31,7 @@ export default function ChainPanel({
   onSelectExpiry,
   onAddLeg,
   onApplyPreset,
+  onOpenFull,
 }: Props) {
   const { t, tStrat, tHint } = useI18n()
   const [showAll, setShowAll] = useState(false)
@@ -109,7 +111,17 @@ export default function ChainPanel({
 
       <div className="panel-head" style={{ marginTop: 20 }}>
         <span className="eyebrow">{t('panel.chain')}</span>
-        {loading && <span className="spin" aria-label="Loading" />}
+        <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          {loading && <span className="spin" aria-label="Loading" />}
+          <button
+            className="full-mode-btn"
+            onClick={onOpenFull}
+            disabled={!expirations.length}
+            title={t('chain.fullModeTip')}
+          >
+            ⛶ {t('chain.fullMode')}
+          </button>
+        </span>
       </div>
 
       <div className="expiry-row" ref={expiryRowRef}>

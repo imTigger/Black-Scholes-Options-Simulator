@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import ChainPanel from './components/ChainPanel'
 import ForecastPanel from './components/ForecastPanel'
+import FullChainModal from './components/FullChainModal'
 import LegsPanel from './components/LegsPanel'
 import PayoffChart from './components/PayoffChart'
 import StatBar from './components/StatBar'
@@ -9,7 +10,11 @@ import { impliedVol } from './lib/blackScholes'
 import { fetchCboeChain } from './lib/cboe'
 import { fmtDateShortUTC } from './lib/format'
 import { useI18n } from './lib/i18n'
-import { fetchMarketdataChain, fetchMarketdataSlice, probeProxy } from './lib/marketdata'
+import {
+  fetchMarketdataChain,
+  fetchMarketdataSlice,
+  probeProxy,
+} from './lib/marketdata'
 import { legExpiryClose, yearsBetween } from './lib/position'
 import { sampleChain } from './lib/sampleData'
 import { describePosition, legFromChain } from './lib/strategies'
@@ -64,6 +69,7 @@ export default function App() {
   const [loading, setLoading] = useState(false)
   const [chainLoading, setChainLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [fullOpen, setFullOpen] = useState(false)
 
   // When live data is unavailable, anchor the simulation on the forecast price
   // so restored positions still chart and price sensibly.
@@ -244,6 +250,23 @@ export default function App() {
     [slices, source, symbol, mdToken, t],
   )
 
+  // Load a slice into `slices` without changing the active expiry — used by the
+  // full-chain modal to lazily fill in expirations on demand.
+  const ensureExpiryLoaded = useCallback(
+    async (ms: number) => {
+      if (slices[ms]) return
+      if (source === 'yahoo') {
+        const res = await fetchChain(symbol, ms)
+        setSlices((s) => ({ ...s, [res.slice.expiry]: res.slice }))
+      } else if (source === 'marketdata') {
+        const { slice } = await fetchMarketdataSlice(symbol, ms, mdToken)
+        setSlices((s) => ({ ...s, [slice.expiry]: slice }))
+      }
+      // cboe / sample already hold every expiry
+    },
+    [slices, source, symbol, mdToken],
+  )
+
   const changeSource = useCallback(
     (src: Source) => {
       setSource(src)
@@ -326,6 +349,7 @@ export default function App() {
               setLegs(sanitizeLegs(newLegs, spot))
               setForecast({ date: now, price: spot, ivShift: 0 })
             }}
+            onOpenFull={() => setFullOpen(true)}
           />
         </div>
 
@@ -410,6 +434,21 @@ export default function App() {
           MIT License
         </a>
       </footer>
+
+      {fullOpen && (
+        <FullChainModal
+          symbol={symbol}
+          expirations={expirations}
+          slices={slices}
+          spot={spot}
+          rate={rate}
+          now={now}
+          onEnsureExpiry={ensureExpiryLoaded}
+          onAddLeg={addLeg}
+          onRefresh={() => void loadSymbol(symbol, true)}
+          onClose={() => setFullOpen(false)}
+        />
+      )}
     </div>
   )
 }

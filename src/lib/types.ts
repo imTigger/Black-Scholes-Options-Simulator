@@ -33,6 +33,8 @@ export interface ChainOption {
   volume: number
   openInterest: number
   inTheMoney: boolean
+  bidSize?: number
+  askSize?: number
 }
 
 export interface ChainSlice {

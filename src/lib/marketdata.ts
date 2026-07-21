@@ -89,6 +89,8 @@ export async function fetchMarketdataSlice(
       openInterest: c.openInterest?.[i] ?? 0,
       inTheMoney:
         c.inTheMoney?.[i] ?? (kind === 'call' ? strike < spot : strike > spot),
+      bidSize: c.bidSize?.[i] ?? 0,
+      askSize: c.askSize?.[i] ?? 0,
     }
     ;(kind === 'call' ? slice.calls : slice.puts).push(opt)
   }
