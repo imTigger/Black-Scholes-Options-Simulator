@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { bsGreeks, type Greeks } from '../lib/blackScholes'
-import { fmtDateUTC, fmtNum } from '../lib/format'
+import { fmtDateShortUTC, fmtDateUTC, fmtNum } from '../lib/format'
 import { useI18n } from '../lib/i18n'
 import { legExpiryClose, MS_DAY, yearsBetween } from '../lib/position'
-import { midPrice, type ChainOption, type ChainSlice } from '../lib/types'
+import { midPrice, type ChainOption, type ChainSlice, type Leg } from '../lib/types'
 
 interface Props {
   symbol: string
@@ -12,8 +12,10 @@ interface Props {
   spot: number
   rate: number
   now: number
+  legs: Leg[]
   onEnsureExpiry: (ms: number) => Promise<void>
   onAddLeg: (opt: ChainOption, expiry: number, side: 1 | -1) => void
+  onSetLegs: (legs: Leg[]) => void
   onRefresh: () => void
   onClose: () => void
 }
@@ -54,8 +56,10 @@ export default function FullChainModal({
   spot,
   rate,
   now,
+  legs,
   onEnsureExpiry,
   onAddLeg,
+  onSetLegs,
   onRefresh,
   onClose,
 }: Props) {
@@ -130,6 +134,7 @@ export default function FullChainModal({
           </button>
         </div>
 
+        <div className="modal-body">
         <div className="modal-scroll">
           <table className="full-chain">
             <thead>
@@ -202,6 +207,48 @@ export default function FullChainModal({
             })}
           </table>
         </div>
+
+        <aside className="modal-side">
+          <div className="side-head">
+            <span className="eyebrow">{t('full.legs')}</span>
+            {legs.length > 0 && <span className="side-count num">{legs.length}</span>}
+          </div>
+          <div className="side-list">
+            {legs.length === 0 ? (
+              <div className="side-empty">
+                <span className="i">ⓘ</span> {t('full.legsEmpty')}
+              </div>
+            ) : (
+              legs.map((l) => (
+                <div className="side-leg" key={l.id}>
+                  <span className={`side-pill ${l.side === 1 ? 'long' : 'short'}`}>
+                    {l.side === 1 ? t('long') : t('short')}
+                  </span>
+                  <span className="side-desc">
+                    {fmtNum(l.strike, l.strike % 1 ? 2 : 0)}
+                    <span className="k">{l.kind === 'call' ? 'C' : 'P'}</span>{' '}
+                    <span className="k">{fmtDateShortUTC(l.expiry)}</span>
+                  </span>
+                  <button
+                    className="side-x"
+                    onClick={() => onSetLegs(legs.filter((x) => x.id !== l.id))}
+                    aria-label={t('full.close')}
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))
+            )}
+          </div>
+          {legs.length > 0 && (
+            <div className="side-foot">
+              <button className="btn" onClick={() => onSetLegs([])}>
+                {t('legs.clear')}
+              </button>
+            </div>
+          )}
+        </aside>
+        </div>
       </div>
     </div>
   )
@@ -223,12 +270,12 @@ function PxCell({
   itm: boolean
   onClick?: () => void
 }) {
-  if (!o) return <td className={`px ${itm ? 'itm' : ''}`}>—</td>
+  if (!o) return <td className={`px ${side} ${itm ? 'itm' : ''}`}>—</td>
   const px = side === 'bid' ? o.bid : o.ask
   const sz = side === 'bid' ? o.bidSize : o.askSize
   return (
     <td
-      className={`px ${itm ? 'itm' : ''} ${onClick ? 'click' : ''}`}
+      className={`px ${side} ${itm ? 'itm' : ''} ${onClick ? 'click' : ''}`}
       onClick={onClick}
       role={onClick ? 'button' : undefined}
       title={onClick ? (side === 'bid' ? 'Sell (short)' : 'Buy (long)') : undefined}

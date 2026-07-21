@@ -443,8 +443,10 @@ export default function App() {
           spot={spot}
           rate={rate}
           now={now}
+          legs={legs}
           onEnsureExpiry={ensureExpiryLoaded}
           onAddLeg={addLeg}
+          onSetLegs={setLegs}
           onRefresh={() => void loadSymbol(symbol, true)}
           onClose={() => setFullOpen(false)}
         />
