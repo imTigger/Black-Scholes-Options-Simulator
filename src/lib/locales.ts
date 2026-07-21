@@ -19,6 +19,8 @@ const en: Dict = {
     tagline: 'Black-Scholes simulator',
     'search.placeholder': 'Search ticker — AAPL, SPY…',
     'rate.label': 'Risk-free rate',
+    'quote.override': 'Underlying price — edit to override the quote',
+    'quote.reset': 'Reset to live price',
     'margin.label': 'Naked margin',
     'margin.tooltip':
       'Percent of the underlying used in the naked-short margin formula (Reg-T: 20%). The OTM floor is half of it.',
@@ -137,6 +139,8 @@ const zhCN: Dict = {
     tagline: 'Black-Scholes 期权模拟器',
     'search.placeholder': '搜索代码 — AAPL、SPY…',
     'rate.label': '无风险利率',
+    'quote.override': '标的价格——可编辑以覆盖报价',
+    'quote.reset': '恢复实时价格',
     'margin.label': '裸卖保证金',
     'margin.tooltip':
       '裸卖空保证金公式中标的价格的百分比（Reg-T 为 20%）。深度价外下限为该值的一半。',
@@ -290,6 +294,8 @@ const zhTW: Dict = {
     tagline: 'Black-Scholes 期權模擬器',
     'search.placeholder': '搜尋代號 — AAPL、SPY…',
     'rate.label': '無風險利率',
+    'quote.override': '標的價格——可編輯以覆蓋報價',
+    'quote.reset': '恢復即時價格',
     'margin.label': '裸賣保證金',
     'margin.tooltip':
       '裸賣空保證金公式中標的價格的百分比（Reg-T 為 20%）。深度價外下限為該值的一半。',

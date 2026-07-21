@@ -298,6 +298,88 @@ select {
   font-size: 19px;
 }
 
+.qpx-input {
+  width: 96px;
+  height: 30px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 0 5px;
+  font-family: var(--mono);
+  font-weight: 600;
+  font-size: 19px;
+  color: var(--ink);
+  appearance: textfield;
+}
+
+.qpx-input::-webkit-outer-spin-button,
+.qpx-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.qpx-input:hover {
+  border-color: var(--line);
+}
+
+.qpx-input:focus {
+  border-color: var(--amber);
+  background: var(--surface-2);
+  outline: none;
+}
+
+.qpx-input.overridden {
+  color: var(--amber);
+}
+
+.qpx-reset {
+  color: var(--amber);
+  font-size: 14px;
+  line-height: 1;
+  width: 24px;
+  height: 24px;
+  border: 1px solid rgba(245, 184, 65, 0.4);
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.qpx-reset:hover {
+  background: rgba(245, 184, 65, 0.14);
+}
+
+/* editable value inside a table cell (leg entry price) */
+.cell-input {
+  width: 58px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  padding: 2px 5px;
+  text-align: right;
+  color: inherit;
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 12.5px;
+  appearance: textfield;
+}
+
+.cell-input::-webkit-outer-spin-button,
+.cell-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.cell-input:hover {
+  border-color: var(--line);
+}
+
+.cell-input:focus {
+  border-color: var(--amber);
+  background: var(--surface-2);
+  outline: none;
+}
+
 .quote .qchg {
   font-family: var(--mono);
   font-size: 13px;
@@ -903,6 +985,12 @@ table.full-chain td.full-empty {
 
 .side-desc .k {
   color: var(--muted);
+}
+
+.side-px {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--ink);
 }
 
 .side-leg .side-pill {

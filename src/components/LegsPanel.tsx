@@ -182,7 +182,20 @@ export default function LegsPanel({ legs, slices, spot, rate, now, forecast, onC
                         </button>
                       </span>
                     </td>
-                    <td>{fmtNum(leg.entryPrice, 2)}</td>
+                    <td>
+                      <input
+                        className="cell-input num"
+                        type="number"
+                        step="0.01"
+                        min={0}
+                        value={+leg.entryPrice.toFixed(2)}
+                        onChange={(e) => {
+                          const v = parseFloat(e.target.value)
+                          if (Number.isFinite(v) && v >= 0) patchLeg(leg.id, { entryPrice: v })
+                        }}
+                        aria-label={t('legs.entry')}
+                      />
+                    </td>
                     <td className="muted">{fmtNum(estNow, 2)}</td>
                     <td style={{ color: 'var(--amber)' }}>{fmtNum(estFc, 2)}</td>
                     <td className={gain ? 'up' : 'down'}>

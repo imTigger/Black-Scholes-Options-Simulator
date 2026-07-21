@@ -15,6 +15,8 @@ const SOURCE_LABELS: Record<Source, string> = {
 
 interface Props {
   quote: Quote | null
+  spot: number
+  overridden: boolean
   loading: boolean
   offline: boolean
   rate: number
@@ -23,6 +25,8 @@ interface Props {
   source: Source | null
   mdToken: string
   searchEnabled: boolean
+  onSpot: (v: number) => void
+  onResetSpot: () => void
   onSource: (s: Source) => void
   onMdToken: (t: string) => void
   onRate: (r: number) => void
@@ -32,6 +36,8 @@ interface Props {
 
 export default function TickerBar({
   quote,
+  spot,
+  overridden,
   loading,
   offline,
   rate,
@@ -40,6 +46,8 @@ export default function TickerBar({
   source,
   mdToken,
   searchEnabled,
+  onSpot,
+  onResetSpot,
   onSource,
   onMdToken,
   onRate,
@@ -161,17 +169,49 @@ export default function TickerBar({
 
       {loading && <span className="spin" aria-label="Loading quote" />}
 
-      {quote && (
-        <div className="quote">
-          <span className="qsym">{quote.symbol}</span>
-          <span className="qname">{quote.name}</span>
-          <span className="qpx">{fmtNum(quote.price, 2)}</span>
-          <span className={`qchg ${quote.change >= 0 ? 'up' : 'down'}`}>
-            {quote.change >= 0 ? '+' : ''}
-            {fmtNum(quote.change, 2)} ({fmtSignedPct(quote.changePct)})
-          </span>
-        </div>
-      )}
+      {quote &&
+        (() => {
+          const prevClose = quote.price - quote.change
+          const chg = overridden ? spot - prevClose : quote.change
+          const pct = overridden
+            ? prevClose > 0
+              ? (spot - prevClose) / prevClose
+              : 0
+            : quote.changePct
+          return (
+            <div className="quote">
+              <span className="qsym">{quote.symbol}</span>
+              <span className="qname">{quote.name}</span>
+              <input
+                className={`qpx-input num ${overridden ? 'overridden' : ''}`}
+                type="number"
+                step="0.01"
+                min={0}
+                value={+spot.toFixed(2)}
+                onChange={(e) => {
+                  const v = parseFloat(e.target.value)
+                  if (Number.isFinite(v) && v > 0) onSpot(v)
+                }}
+                title={t('quote.override')}
+                aria-label={t('quote.override')}
+              />
+              {overridden && (
+                <button
+                  className="qpx-reset"
+                  onClick={onResetSpot}
+                  title={t('quote.reset')}
+                  aria-label={t('quote.reset')}
+                >
+                  ↺
+                </button>
+              )}
+              <span className={`qchg ${chg >= 0 ? 'up' : 'down'}`}>
+                {chg >= 0 ? '+' : ''}
+                {fmtNum(chg, 2)} ({fmtSignedPct(pct)})
+              </span>
+            </div>
+          )
+        })()}
 
       {offline && <span className="badge-offline">{t('badge.sample')}</span>}
 

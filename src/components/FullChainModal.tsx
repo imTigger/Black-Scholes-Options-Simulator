@@ -229,6 +229,7 @@ export default function FullChainModal({
                     <span className="k">{l.kind === 'call' ? 'C' : 'P'}</span>{' '}
                     <span className="k">{fmtDateShortUTC(l.expiry)}</span>
                   </span>
+                  <span className="side-px num">{fmtNum(l.entryPrice, 2)}</span>
                   <button
                     className="side-x"
                     onClick={() => onSetLegs(legs.filter((x) => x.id !== l.id))}

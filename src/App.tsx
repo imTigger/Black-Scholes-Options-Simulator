@@ -70,11 +70,16 @@ export default function App() {
   const [chainLoading, setChainLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [fullOpen, setFullOpen] = useState(false)
+  // Manual override of the underlying price (e.g. when the delayed quote is
+  // stale). Cleared whenever a symbol loads. Not persisted.
+  const [spotOverride, setSpotOverride] = useState<number | null>(null)
 
   // When live data is unavailable, anchor the simulation on the forecast price
   // so restored positions still chart and price sensibly.
   const liveSpot = quote?.price ?? 0
-  const spot = liveSpot > 0 ? liveSpot : forecast.price
+  const baseSpot = liveSpot > 0 ? liveSpot : forecast.price
+  const spotOverridden = spotOverride != null && spotOverride > 0
+  const spot = spotOverridden ? spotOverride! : baseSpot
 
   // Persisted forecast dates age out — never simulate into the past
   useEffect(() => {
@@ -119,6 +124,7 @@ export default function App() {
       },
       keepLegs: boolean,
     ) => {
+      setSpotOverride(null)
       setQuote(next.quote)
       setExpirations(next.expirations)
       setSlices(next.slices)
@@ -305,6 +311,10 @@ export default function App() {
         </div>
         <TickerBar
           quote={quote}
+          spot={spot}
+          overridden={spotOverridden}
+          onSpot={(v) => setSpotOverride(v)}
+          onResetSpot={() => setSpotOverride(null)}
           loading={loading}
           offline={source === 'sample'}
           rate={rate}
