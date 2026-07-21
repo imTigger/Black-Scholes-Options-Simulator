@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { fmtMoney, fmtNum, fmtSignedMoney } from '../lib/format'
+import { fmtMoney, fmtNum, fmtSigned, fmtSignedMoney } from '../lib/format'
 import { useI18n } from '../lib/i18n'
 import {
   findBreakevens,
@@ -94,10 +94,11 @@ export default function StatBar({ legs, spot, rate, marginPct, forecast }: Props
         </div>
       </div>
       <div className="stat-grid">
-        <div className="stat">
+        <div className="stat" title={t('stat.deltaTip', { sh: fmtNum(stats.greeks.delta, 0) })}>
           <div className="sl">Delta</div>
           <div className="sv">
-            {fmtNum(stats.greeks.delta, 1)} <small>{t('stat.sh')}</small>
+            {fmtSigned(stats.greeks.delta / 100, 2)}{' '}
+            <small>· {fmtNum(stats.greeks.delta, 0)} {t('stat.sh')}</small>
           </div>
         </div>
         <div className="stat">

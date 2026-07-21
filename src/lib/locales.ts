@@ -103,6 +103,8 @@ const en: Dict = {
     'stat.day': '/day',
     'stat.volpt': '/vol pt',
     'stat.ratept': '/1%',
+    'stat.deltaTip':
+      'Per-contract delta (−1 to 1); the “sh” figure is the position’s share-equivalent exposure (delta × 100 × contracts). A short put is bullish, so its delta is positive.',
     'chart.empty': 'The payoff chart appears here once the position has at least one leg.',
     'chart.price': 'Price',
     'chart.on': 'On {date}',
@@ -205,6 +207,8 @@ const zhCN: Dict = {
     'stat.day': '/天',
     'stat.volpt': '/波动点',
     'stat.ratept': '/1%',
+    'stat.deltaTip':
+      '每张合约 Delta（介于 −1 到 1）；“股”为持仓的等效股数敞口（Delta × 100 × 合约数）。卖出看跌为看涨方向，故 Delta 为正。',
     'chart.empty': '添加至少一条腿后，此处将显示损益图。',
     'chart.price': '价格',
     'chart.on': '{date} 时',
@@ -343,6 +347,8 @@ const zhTW: Dict = {
     'stat.day': '/天',
     'stat.volpt': '/波動點',
     'stat.ratept': '/1%',
+    'stat.deltaTip':
+      '每張合約 Delta（介於 −1 到 1）；「股」為持倉的等效股數曝險（Delta × 100 × 合約數）。賣出賣權為看漲方向，故 Delta 為正。',
     'chart.empty': '新增至少一條腿後，此處將顯示損益圖。',
     'chart.price': '價格',
     'chart.on': '{date} 時',
