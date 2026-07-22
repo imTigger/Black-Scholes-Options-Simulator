@@ -269,6 +269,10 @@ const zhCN: Dict = {
     'Bull put credit': '牛市看跌价差',
     'Bear call credit': '熊市看涨价差',
     'Call butterfly': '看涨蝶式',
+    'Call condor': '看涨鹰式',
+    'Put condor': '看跌鹰式',
+    'Short call condor': '卖出看涨鹰式',
+    'Short put condor': '卖出看跌鹰式',
   },
   hints: {
     'long-call': '看涨 · 买入平值看涨',
@@ -286,6 +290,7 @@ const zhCN: Dict = {
     'iron-condor': '区间震荡 · 卖出看跌与看涨价差',
     'iron-butterfly': '钉住行权价 · 卖跨式，买两翼',
     'call-butterfly': '钉住行权价 · 1-2-1 看涨蝶式',
+    'call-condor': '区间震荡 · 买入两端看涨，卖出中间',
   },
 }
 
@@ -424,6 +429,10 @@ const zhTW: Dict = {
     'Bull put credit': '多頭賣權價差',
     'Bear call credit': '空頭買權價差',
     'Call butterfly': '買權蝶式',
+    'Call condor': '買權鷹式',
+    'Put condor': '賣權鷹式',
+    'Short call condor': '賣出買權鷹式',
+    'Short put condor': '賣出賣權鷹式',
   },
   hints: {
     'long-call': '看漲 · 買入價平買權',
@@ -441,6 +450,7 @@ const zhTW: Dict = {
     'iron-condor': '區間盤整 · 賣出賣權與買權價差',
     'iron-butterfly': '釘住履約價 · 賣跨式，買兩翼',
     'call-butterfly': '釘住履約價 · 1-2-1 買權蝶式',
+    'call-condor': '區間盤整 · 買入兩端買權，賣出中間',
   },
 }
 

@@ -215,6 +215,18 @@ export const STRATEGY_PRESETS: StrategyPreset[] = [
       ]),
   },
   {
+    key: 'call-condor',
+    name: 'Call condor',
+    hint: 'Range-bound · buy outer calls, sell inner',
+    build: (s, spot) =>
+      build(s, spot, [
+        { offset: -4, kind: 'call', side: 1 },
+        { offset: -2, kind: 'call', side: -1 },
+        { offset: 2, kind: 'call', side: -1 },
+        { offset: 4, kind: 'call', side: 1 },
+      ]),
+  },
+  {
     key: 'iron-condor',
     name: 'Iron condor',
     hint: 'Range-bound · sell put & call spreads',
@@ -258,6 +270,18 @@ export function describePosition(legs: Leg[]): string {
       const shortPut = puts.find((p) => p.side === -1)
       if (shortCall && shortPut)
         return shortCall.strike === shortPut.strike ? 'Iron butterfly' : 'Iron condor'
+    }
+  }
+  // Same-type condor: four distinct strikes, wings long and body short (or the
+  // reverse). A long/short alternating pattern is a double vertical, not a condor.
+  if (legs.length === 4 && (calls.length === 4 || puts.length === 4)) {
+    const isCall = calls.length === 4
+    const byStrike = [...legs].sort((a, b) => a.strike - b.strike)
+    const distinct = new Set(byStrike.map((l) => l.strike)).size === 4
+    if (distinct && longs.length === 2 && shorts.length === 2) {
+      const sides = byStrike.map((l) => l.side).join(',')
+      if (sides === '1,-1,-1,1') return isCall ? 'Call condor' : 'Put condor'
+      if (sides === '-1,1,1,-1') return isCall ? 'Short call condor' : 'Short put condor'
     }
   }
   if (legs.length === 3 && (calls.length === 3 || puts.length === 3)) return 'Butterfly'
