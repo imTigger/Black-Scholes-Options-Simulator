@@ -128,7 +128,7 @@ const en: Dict = {
     'full.refresh': 'Refresh',
     'full.empty': 'No contracts for this expiration.',
     'full.legs': 'Legs',
-    'full.legsEmpty': 'Click a Bid (sell) or Ask (buy) price to add a leg.',
+    'full.legsEmpty': 'Click a Bid (short) or Ask (long) price to add a leg.',
   },
   strategies: {},
   hints: {},
@@ -247,7 +247,7 @@ const zhCN: Dict = {
     'full.refresh': '刷新',
     'full.empty': '该到期日无合约。',
     'full.legs': '腿',
-    'full.legsEmpty': '点击买价（卖出）或卖价（买入）添加一条腿。',
+    'full.legsEmpty': '点击买价（做空）或卖价（做多）添加一条腿。',
   },
   strategies: {
     'No position': '无持仓',
@@ -407,7 +407,7 @@ const zhTW: Dict = {
     'full.refresh': '重新整理',
     'full.empty': '該到期日無合約。',
     'full.legs': '腿',
-    'full.legsEmpty': '點擊買價（賣出）或賣價（買入）新增一條腿。',
+    'full.legsEmpty': '點擊買價（做空）或賣價（做多）新增一條腿。',
   },
   strategies: {
     'No position': '無持倉',

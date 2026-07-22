@@ -90,31 +90,31 @@ export const STRATEGY_PRESETS: StrategyPreset[] = [
   {
     key: 'long-call',
     name: 'Long call',
-    hint: 'Bullish · buy ATM call',
+    hint: 'Bullish · long ATM call',
     build: (s, spot) => build(s, spot, [{ offset: 0, kind: 'call', side: 1 }]),
   },
   {
     key: 'long-put',
     name: 'Long put',
-    hint: 'Bearish · buy ATM put',
+    hint: 'Bearish · long ATM put',
     build: (s, spot) => build(s, spot, [{ offset: 0, kind: 'put', side: 1 }]),
   },
   {
     key: 'short-call',
     name: 'Short call',
-    hint: 'Bearish income · sell OTM call, naked',
+    hint: 'Bearish income · short OTM call, naked',
     build: (s, spot) => build(s, spot, [{ offset: 2, kind: 'call', side: -1 }]),
   },
   {
     key: 'short-put',
     name: 'Short put',
-    hint: 'Bullish income · sell OTM put',
+    hint: 'Bullish income · short OTM put',
     build: (s, spot) => build(s, spot, [{ offset: -2, kind: 'put', side: -1 }]),
   },
   {
     key: 'bull-call-spread',
     name: 'Bull call spread',
-    hint: 'Debit · buy ATM call, sell higher call',
+    hint: 'Debit · long ATM call, short higher call',
     build: (s, spot) =>
       build(s, spot, [
         { offset: 0, kind: 'call', side: 1 },
@@ -124,7 +124,7 @@ export const STRATEGY_PRESETS: StrategyPreset[] = [
   {
     key: 'bear-put-spread',
     name: 'Bear put spread',
-    hint: 'Debit · buy ATM put, sell lower put',
+    hint: 'Debit · long ATM put, short lower put',
     build: (s, spot) =>
       build(s, spot, [
         { offset: 0, kind: 'put', side: 1 },
@@ -134,7 +134,7 @@ export const STRATEGY_PRESETS: StrategyPreset[] = [
   {
     key: 'bull-put-credit',
     name: 'Bull put credit',
-    hint: 'Credit · sell OTM put, buy lower put',
+    hint: 'Credit · short OTM put, long lower put',
     build: (s, spot) =>
       build(s, spot, [
         { offset: -2, kind: 'put', side: -1 },
@@ -144,7 +144,7 @@ export const STRATEGY_PRESETS: StrategyPreset[] = [
   {
     key: 'bear-call-credit',
     name: 'Bear call credit',
-    hint: 'Credit · sell OTM call, buy higher call',
+    hint: 'Credit · short OTM call, long higher call',
     build: (s, spot) =>
       build(s, spot, [
         { offset: 2, kind: 'call', side: -1 },
@@ -154,7 +154,7 @@ export const STRATEGY_PRESETS: StrategyPreset[] = [
   {
     key: 'straddle',
     name: 'Long straddle',
-    hint: 'Big move either way · buy ATM call + put',
+    hint: 'Big move either way · long ATM call + put',
     build: (s, spot) =>
       build(s, spot, [
         { offset: 0, kind: 'call', side: 1 },
@@ -164,7 +164,7 @@ export const STRATEGY_PRESETS: StrategyPreset[] = [
   {
     key: 'strangle',
     name: 'Long strangle',
-    hint: 'Cheaper straddle · buy OTM call + OTM put',
+    hint: 'Cheaper straddle · long OTM call + OTM put',
     build: (s, spot) =>
       build(s, spot, [
         { offset: 2, kind: 'call', side: 1 },
@@ -174,7 +174,7 @@ export const STRATEGY_PRESETS: StrategyPreset[] = [
   {
     key: 'short-straddle',
     name: 'Short straddle',
-    hint: 'Pin the strike · sell ATM call + put',
+    hint: 'Pin the strike · short ATM call + put',
     build: (s, spot) =>
       build(s, spot, [
         { offset: 0, kind: 'call', side: -1 },
@@ -184,7 +184,7 @@ export const STRATEGY_PRESETS: StrategyPreset[] = [
   {
     key: 'short-strangle',
     name: 'Short strangle',
-    hint: 'Range income · sell OTM call + put',
+    hint: 'Range income · short OTM call + put',
     build: (s, spot) =>
       build(s, spot, [
         { offset: 2, kind: 'call', side: -1 },
@@ -205,7 +205,7 @@ export const STRATEGY_PRESETS: StrategyPreset[] = [
   {
     key: 'iron-butterfly',
     name: 'Iron butterfly',
-    hint: 'Pin the strike · sell ATM straddle, buy wings',
+    hint: 'Pin the strike · short ATM straddle, long wings',
     build: (s, spot) =>
       build(s, spot, [
         { offset: -3, kind: 'put', side: 1 },
@@ -217,7 +217,7 @@ export const STRATEGY_PRESETS: StrategyPreset[] = [
   {
     key: 'call-condor',
     name: 'Call condor',
-    hint: 'Range-bound · buy outer calls, sell inner',
+    hint: 'Range-bound · long outer calls, short inner',
     build: (s, spot) =>
       build(s, spot, [
         { offset: -4, kind: 'call', side: 1 },
@@ -229,7 +229,7 @@ export const STRATEGY_PRESETS: StrategyPreset[] = [
   {
     key: 'iron-condor',
     name: 'Iron condor',
-    hint: 'Range-bound · sell put & call spreads',
+    hint: 'Range-bound · short put & call spreads',
     build: (s, spot) =>
       build(s, spot, [
         { offset: -4, kind: 'put', side: 1 },

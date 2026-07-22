@@ -271,6 +271,7 @@ function PxCell({
   itm: boolean
   onClick?: () => void
 }) {
+  const { t } = useI18n()
   if (!o) return <td className={`px ${side} ${itm ? 'itm' : ''}`}>—</td>
   const px = side === 'bid' ? o.bid : o.ask
   const sz = side === 'bid' ? o.bidSize : o.askSize
@@ -279,7 +280,11 @@ function PxCell({
       className={`px ${side} ${itm ? 'itm' : ''} ${onClick ? 'click' : ''}`}
       onClick={onClick}
       role={onClick ? 'button' : undefined}
-      title={onClick ? (side === 'bid' ? 'Sell (short)' : 'Buy (long)') : undefined}
+      title={
+        onClick
+          ? t(side === 'bid' ? 'chain.short' : 'chain.long', { p: fmtNum(px, 2) })
+          : undefined
+      }
     >
       <span className="px-v">{px > 0 ? fmtNum(px, 2) : '—'}</span>
       {sz ? <span className="px-sz">×{fmtNum(sz, 0)}</span> : null}
